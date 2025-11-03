@@ -1,6 +1,5 @@
-
 \documentclass[letterpaper,twocolumn,10pt]{article}
-\usepackage{usenix, epsfig, endnotes}
+\usepackage{usenix,epsfig, endnotes}
 \begin{document}
 
 %don't want date printed
@@ -10,17 +9,25 @@
 \title{\Large \bf BaitBlock: Measuring and Mitigating Phishing Propagation in YouTube Live Chats}
 
 \author{
-\begin{tabular}{@{}llll@{}}
-\rm{Andy Wu} & \rm{cw4483@nyu.edu} & \rm{B.S. Computer Engineering}
-\end{tabular}
+{\rm Andy Wu}\\
+cw4483@nyu.edu\\
+B.S. Computer Engineering
 }
 
 \maketitle
 
 \section{Introduction}
 \subsection{Problem Statement}
+Live streaming platforms like Twitch and YouTube Live have become an incredibly effective medium for novel phishing and impersonation scams. Attackers piggyback on the trust and parasocial relationships of communities surrounding different streamers to develop scams. Recent research reveals the alarming scope of this issue. A joint study between UCSD and Google \cite{liu2024give} measuring cryptocurrency giveaway scams found that scammers converted about 4 in 100,000 live stream views into victims, extracting nearly \$4.62 million from just a few hundred people during the study window.
+
 \subsection{Motivation and Significance}
+
+Notably, younger fans are especially susceptible to this new form of phishing attack. While children are already more vulnerable to scams, streaming platforms have a predominantly young audience and exacerbate children's vulnerability by providing a space for attackers to target them easily. A young audience who are eager to interact with their favorite streamers are much more easily fooled by attackers impersonating the same streamers. A multi-year study from RiskIQ \cite{cuthbertson2019youtube} revealed how criminals mimicked seven prominent YouTube channels, such as vlogger James Charles and commentator Philip DeFranco, and successfully tricked over 70,000 viewers by sending messages that framed malicious links as links to receive giveaway prizes.
+
+Live streaming as a platform is relatively young, and academic attention has lagged behind more established social media. Phishing has been studied extensively in emails and static social network posts, but YouTube Live and Twitch chats present a new terrain that is fast-moving and loosely moderated.  It is an incredibly difficult challenge to prevent this new form of phishing attack entirely. Streamers do frequently organize authentic promotional events like giveaways and raffles that are incentivized by cryptocurrency. They reach out to fans and winners in the same communication channels (e.g, direct messages, stream chatrooms) where impersonators attempt scams. Occasionally, the official events sponsored by prominent streamers are scams themselves. Numerous high-profile NFT and meme coin projects promoted by very popular streamers have ended in pump-and-dump collapses, with a majority of their participants suffering serious financial losses. This further blurs the boundaries between legitimate and malicious engagements on streaming platforms. Consequently, it is difficult to build effective rule-based filter solutions against phishing attacks on streaming platforms.
+
 \subsection{Scope and Project}
+BaitBlock will be scoped as a platform measurement project that will measure and flag impersonation-driven phishing scams. Due to time restrictions, BaitBlock will focus on monitoring streams on YouTube Live only. The tool under development is a Chrome Extension that parses any YouTube live chatroom in real-time, flags high-risk scam content, and cross-references it with platform moderation events. I will be focusing specifically on streams categorized under “Finance,” “Web3,” and “Influencer”. These three genres are particularly saturated with scam behavior, according to both anecdotal and empirical studies.
 \subsection{Project Outcomes}
 \section{Related Work}
 \subsection{Core Sources}
