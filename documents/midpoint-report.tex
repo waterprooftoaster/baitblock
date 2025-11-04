@@ -1,9 +1,7 @@
 \documentclass[letterpaper,twocolumn,10pt]{article}
-\usepackage{usenix,epsfig, endnotes}
+\usepackage{usenix,epsfig, endnotes,url}
+\usepackage[colorlinks=true, urlcolor=blue, linkcolor=black, citecolor=black]{hyperref}
 \begin{document}
-
-%don't want date printed
-\date{}
 
 %make title bold and 14 pt font (Latex default is non-bold, 16 pt)
 \title{\Large \bf BaitBlock: Measuring and Mitigating Phishing Propagation in YouTube Live Chats}
@@ -18,29 +16,63 @@ B.S. Computer Engineering
 
 \section{Introduction}
 \subsection{Problem Statement}
-Live streaming platforms like Twitch and YouTube Live have become an incredibly effective medium for novel phishing and impersonation scams. Attackers piggyback on the trust and parasocial relationships of communities surrounding different streamers to develop scams. Recent research reveals the alarming scope of this issue. A joint study between UCSD and Google \cite{liu2024give} measuring cryptocurrency giveaway scams found that scammers converted about 4 in 100,000 live stream views into victims, extracting nearly \$4.62 million from just a few hundred people during the study window.
+
+Live streaming platforms like Twitch and YouTube Live have become an incredibly effective attack vector for novel phishing and impersonation scams. Attackers piggyback on the trust and parasocial relationships of communities surrounding different streamers to scam viewers with fraudulent crypto prizes. Recent research reveals the alarming scope of this issue. A joint study between UCSD, UCLA, and Google \cite{liu2024give} measuring cryptocurrency giveaway scams found that scammers converted about 4 in 100,000 live stream views into victims, extracting nearly \$4.62 million from just a few hundred people during the study window.
 
 \subsection{Motivation and Significance}
 
-Notably, younger fans are especially susceptible to this new form of phishing attack. While children are already more vulnerable to scams, streaming platforms have a predominantly young audience and exacerbate children's vulnerability by providing a space for attackers to target them easily. A young audience who are eager to interact with their favorite streamers are much more easily fooled by attackers impersonating the same streamers. A multi-year study from RiskIQ \cite{cuthbertson2019youtube} revealed how criminals mimicked seven prominent YouTube channels, such as vlogger James Charles and commentator Philip DeFranco, and successfully tricked over 70,000 viewers by sending messages that framed malicious links as links to receive giveaway prizes.
+Live streaming as a platform is relatively young, and academic attention has lagged behind more established social media. Phishing has been studied extensively in emails and static social network posts, but YouTube Live and Twitch chats presents an ecosystem that is fast-moving and loosely moderated. Nguyen et al. \cite{nguyen2025prosper} studying the exploitation of real-time chats on X highlights how understudied this emerging attack vector is, and reserarchers underestimate the attacks commited by financially motivated attackers. I wish for BaitBlock to provide another source of empirical data that assists in academic and moderation expansion into this field. 
 
-Live streaming as a platform is relatively young, and academic attention has lagged behind more established social media. Phishing has been studied extensively in emails and static social network posts, but YouTube Live and Twitch chats present a new terrain that is fast-moving and loosely moderated.  It is an incredibly difficult challenge to prevent this new form of phishing attack entirely. Streamers do frequently organize authentic promotional events like giveaways and raffles that are incentivized by cryptocurrency. They reach out to fans and winners in the same communication channels (e.g, direct messages, stream chatrooms) where impersonators attempt scams. Occasionally, the official events sponsored by prominent streamers are scams themselves. Numerous high-profile NFT and meme coin projects promoted by very popular streamers have ended in pump-and-dump collapses, with a majority of their participants suffering serious financial losses. This further blurs the boundaries between legitimate and malicious engagements on streaming platforms. Consequently, it is difficult to build effective rule-based filter solutions against phishing attacks on streaming platforms.
+That said, it is an incredibly difficult challenge to detect and prevent this new form of phishing attack entirely. Firstly, Streamers do frequently organize real promotional events like crypto giveaways and raffles. They reach out to fans and winners in the same communication channels (e.g, chatroom messages, direct messages) where impersonators attempt scams. Occasionally, the official events sponsored by prominent streamers are scams themselves. Numerous high-profile NFT and meme coin projects promoted by very popular streamers have ended in pump-and-dump collapses, with a majority of their participants suffering serious financial losses. This further blurs the boundaries between legitimate and malicious engagements on streaming platforms. It will thus be difficult to build effective filter solutions with only rule-based logic.
+
+Notably, younger fans are especially susceptible to this new form of phishing attack. While children are already more vulnerable to scams, streaming platforms have a predominantly young audience and thus increase the number of children targeted. Younger audiences who are eager to interact with their favorite streamers are much more likely to be fooled by attackers impersonating them. An article from \textit{The Independent} covered a multi-year study from RiskIQ \cite{cuthbertson2019youtube} revealed how criminals mimicked seven prominent YouTube channels, such as vlogger James Charles and commentator Philip DeFranco, and successfully tricked over 70,000 viewers with phishing links that were framed to be prize winnings.
 
 \subsection{Scope and Project}
-BaitBlock will be scoped as a platform measurement project that will measure and flag impersonation-driven phishing scams. Due to time restrictions, BaitBlock will focus on monitoring streams on YouTube Live only. The tool under development is a Chrome Extension that parses any YouTube live chatroom in real-time, flags high-risk scam content, and cross-references it with platform moderation events. I will be focusing specifically on streams categorized under “Finance,” “Web3,” and “Influencer”. These three genres are particularly saturated with scam behavior, according to both anecdotal and empirical studies.
+
+BaitBlock will be scoped as a platform measurement project that will measure and flag impersonation-driven phishing scams. Due to resource restrictions, my personal preference for the YouTube Data API, and the lack of moderation on YouTube Live compared to similar platforms, BaitBlock will focus on monitoring streams on YouTube Live only. This project will be implemented as a Chrome Extension that parses any YouTube live chatroom in real-time, flags high-risk scam content, and cross-references it with platform moderation events. I will be focusing specifically on streams categorized under “Finance,” “Web3,” and “Influencer”. In my personal experience, these categories contain the largest amount of malicious chat messages.
+
 \subsection{Project Outcomes}
+
+Baitblock does not aim to halt scams directly or intervene in stream content. Instead, BaitBlock functions as a measurement and detection instrument. It will log scam-like messages, label them using both rule-based and model-based classifiers, and evaluate their prevalence and moderation response under live conditions.
+
+By the end of the term, BaitBlock will deliver three key outcomes:
+\begin{enumerate}
+\item A functional Chrome Extension that flags likely scams in YouTube Live chats.
+\item A labeled dataset of both scam and benign messages captured from active livestreams.
+\item An analytical report comparing BaitBlock’s detection to YouTube’s moderation response, identifying platform gaps and design opportunities for improved intervention.
+\end{enumerate}
+
 \section{Related Work}
 \subsection{Core Sources}
+
+Numerous academic and gray literatures provide an excellent perspective on this issue and empirical data to build upon. The joint study Liu et al. \cite{liu2024give} mentioned previously shows how obvious scams that are low percentage can still yield tremendous profits from their sheer volume alone. Thus, Baitblock should first focus on detecting these discernible and volume-based scams first.
+
+Account identity verification is another low-hanging fruit. In his article, Cuthbertson \cite{cuthbertson2019youtube} highlighted scams that impersonated high-profile influencers. These types of scams are easily spotted by comparing the senders' accounts with a database of influencers' real accounts. However, impersonations are not isolated to influential figures. Nguyen et al. \cite{nguyen2025prosper} also provide a deep look into how scammers impersonate regular individuals with AI during real-time social interactions to reroute payments on X. It is unrealistic to keep a database of every account. Thus, other techniques will be needed to guarantee authenticity for regular individuals or smaller influencers. 
+
+Gorwa et al. \cite{gorwa2020algorithmic} provides a technical primer on the different techniques of content moderation with Machine Learning and an analysis of its political and societal implications. But in the context of Baitblock, I intend on training a predictive model as mentioned in the article in addition to a singular rule-based filter. 
+
+Twitch’s transparency report \cite{twitch2025disinfo} reported tens of millions of instances of platform enforcement against scams, this gives a bird's eye view on how widespread the issue is. The transparency reports also outline the varying efficacy of tools like Suspicious User Controls and platform policies against impersonation. I would like BaitBlock to compare the results it gathers from Youtube Live with Twitch's transparency report.
+
+A good friend and fellow developer, Omobolaji Alabi, developed a useful project \cite{slinkywalnut_divhacks_repo} that can detect and verify claims for the 2025 Divhacks Hackathon with his team. Specifically, the workflow used to detect what claims are made in a page will be incredibly helpful in detecting what claims are made in a chat message.
+
 \subsection{Identify Gaps}
+
+Cuthbertson \cite{cuthbertson2019youtube} and Nguyen et al. \cite{nguyen2025prosper} covered scams that do not use livestream chats as attack vectors. Thus, I cannot expect BaitBlock to detect data comparable to these two articles. In addition, Alabi and his team \cite{slinkywalnut_divhacks_repo} did not design their claim detection logic to work in the fast-paced livestream environment. I may need to lean down the multi-step process for cost and speed saving reasons. 
+
 \section{Research Plan and Current Status}
 \subsection{Objectives}
 \subsection{Methodological Approach}
 \subsection{Progress to Date}
 \subsection{Next Steps}
 
-\bibliographystyle{plain}
+\bibliographystyle{abbrv}
 \bibliography{refs}
+
 \end{document}
+
+
+
+
 
 
 
