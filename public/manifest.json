@@ -4,6 +4,6 @@
     "version": "1.0",
     "description": "Block bait links and unwanted content.",
     "action": {
-        "default_pop": "index.html"
+        "default_popup": "index.html"
     }
 }
