@@ -1,9 +1,27 @@
 {
-    "manifest_version": 3,
-    "name": "baitblock",
-    "version": "1.0",
-    "description": "Block bait links and unwanted content.",
-    "action": {
-        "default_popup": "index.html"
+  "manifest_version": 3,
+  "name": "baitblock",
+  "version": "1.0",
+  "description": "Block bait links and unwanted content.",
+  "permissions": [
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.youtube.com/*"
+  ],
+  "background": {
+    "service_worker": "background.ts"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*"
+      ],
+      "js": [],
+      "run_at": "document_idle"
     }
+  ],
+  "action": {
+    "default_popup": "index.html"
+  }
 }
