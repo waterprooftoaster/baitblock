@@ -3,7 +3,8 @@
 /** Check if the url is YoutubeLive */
 export function isUrlSupported(onStatus: (supported: boolean) => void) {
   return urlListener(() => {
-    onStatus(isYoutubeLive());
+    const supported = isYoutubeLive();
+    onStatus(supported);
   });
 }
 
@@ -11,20 +12,13 @@ export function isUrlSupported(onStatus: (supported: boolean) => void) {
 function isYoutubeLive(loc: Location = window.location): boolean {
   const u = new URL(loc.href);
   const h = u.hostname;
-
   const isYoutube =
     h === "www.youtube.com" ||
     h === "youtube.com" ||
     h.endsWith(".youtube.com");
   if (!isYoutube) return false;
-
   const p = u.pathname;
-  if (isYoutube) {
-    return (
-      p.startsWith("/live*")
-    );
-  }
-  return false;
+  return p === "/live" || p.startsWith("/live/");
 }
 
 /** Enable observation of url changes on a SPA */
@@ -32,9 +26,9 @@ function urlListener(onChange: () => void): () => void {
   const ROUTE_EVENT = "baitblock:urlchange";
   const emit = () => window.dispatchEvent(new Event(ROUTE_EVENT));
 
+  // Patch history methods
   function patchHistory(method: "pushState" | "replaceState") {
     const original = history[method] as typeof history.pushState;
-
     (history as any)[method] = function (
       this: History,
       data: any,
@@ -46,22 +40,19 @@ function urlListener(onChange: () => void): () => void {
       return result;
     } as typeof original;
   }
-
   patchHistory("pushState");
   patchHistory("replaceState");
 
+  // Listen to events could be url changes
   const onPop = () => emit();
   const onHash = () => emit();
+  const onYt = () => emit();
+  const mo = new MutationObserver(() => emit());
+  const onRoute = () => onChange();
   window.addEventListener("popstate", onPop);
   window.addEventListener("hashchange", onHash);
-
-  const onYt = () => emit();
   window.addEventListener("yt-navigate-finish" as any, onYt);
-
-  const mo = new MutationObserver(() => emit());
   mo.observe(document.documentElement, { childList: true, subtree: true });
-
-  const onRoute = () => onChange();
   window.addEventListener(ROUTE_EVENT, onRoute);
 
   // Initial tick
