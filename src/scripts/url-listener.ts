@@ -12,6 +12,7 @@ export function isUrlSupported(onStatus: (supported: boolean) => void) {
 function isYoutubeLive(loc: Location = window.location): boolean {
   const u = new URL(loc.href);
   const h = u.hostname;
+  const p = u.pathname;
 
   const isYoutube =
     h === "www.youtube.com" ||
@@ -19,8 +20,9 @@ function isYoutubeLive(loc: Location = window.location): boolean {
     h.endsWith(".youtube.com");
   if (!isYoutube) return false;
 
-  const p = u.pathname;
-  return p === "/live" || p.startsWith("/live/")
+  return p === "/live" ||
+    p.startsWith("/live/") ||
+    /^\/channel\/[^/]+\/live$/.test(p)
 }
 
 /** Enable observation of url changes on a SPA */
