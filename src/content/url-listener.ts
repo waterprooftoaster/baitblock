@@ -1,7 +1,7 @@
 // src/url-listener.ts
 
 /** Check if the url is YoutubeLive */
-export function isUrlSupported(onStatus: (supported: boolean) => void) {
+export function isPageSupported(onStatus: (supported: boolean) => void) {
   return urlListener(() => {
     const supported = isYoutubeLive();
     onStatus(supported);
@@ -51,11 +51,11 @@ function urlListener(onChange: () => void): () => void {
   const onPop = () => emit();
   const onHash = () => emit();
   const onYt = () => emit();
-  const mo = new MutationObserver(() => emit());
+  // const mo = new MutationObserver(() => emit());
   window.addEventListener("popstate", onPop);
   window.addEventListener("hashchange", onHash);
   window.addEventListener("yt-navigate-finish" as any, onYt);
-  mo.observe(document.documentElement, { childList: true, subtree: true });
+  // mo.observe(document.documentElement, { childList: true, subtree: true });
 
   // Listen to our custom event that fires when url changes
   const onRoute = () => onChange();
@@ -64,12 +64,12 @@ function urlListener(onChange: () => void): () => void {
   // Initial tick
   emit();
 
-  // Cleanup
+  // Destructor
   return () => {
     window.removeEventListener("popstate", onPop);
     window.removeEventListener("hashchange", onHash);
     window.removeEventListener("yt-navigate-finish" as any, onYt);
     window.removeEventListener(ROUTE_EVENT, onRoute);
-    mo.disconnect();
+    // mo.disconnect();
   };
 }
