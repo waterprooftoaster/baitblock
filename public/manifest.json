@@ -7,18 +7,17 @@
     "scripting"
   ],
   "host_permissions": [
-    "https://www.youtube.com/*"
+    "https://*/*"
   ],
-  "background": {
-    "service_worker": "background.ts"
-  },
   "content_scripts": [
     {
       "matches": [
-        "https://www.youtube.com/*"
+        "<all_urls>"
       ],
-      "js": [],
-      "run_at": "document_idle"
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_start"
     }
   ],
   "action": {
