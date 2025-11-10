@@ -2,8 +2,8 @@ import { isPageSupported } from "../content/url-listener";
 
 isPageSupported((supported) => {
   if (supported) {
-    console.log("Youtube Live detected");
+    console.log("Page Supported");
   } else {
-    console.log("Not Youtube Live");
+    console.log("Page Not Supported");
   }
 })

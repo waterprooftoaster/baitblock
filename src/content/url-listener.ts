@@ -3,29 +3,38 @@
 /** Check if the url is YoutubeLive */
 export function isPageSupported(onStatus: (supported: boolean) => void) {
   return urlListener(() => {
-    const supported = isYoutubeLive();
+    const supported = (isTwitch() || isKick());
     onStatus(supported);
   });;
 }
 
-/** Check if the url is YoutubeLive */
-function isYoutubeLive(loc: Location = window.location): boolean {
+// Check if the url is Twitch
+function isTwitch(loc: Location = window.location): boolean {
   const u = new URL(loc.href);
   const h = u.hostname;
-  const p = u.pathname;
-
-  const isYoutube =
-    h === "www.youtube.com" ||
-    h === "youtube.com" ||
-    h.endsWith(".youtube.com");
-  if (!isYoutube) return false;
-
-  return p === "/live" ||
-    p.startsWith("/live/") ||
-    /^\/channel\/[^/]+\/live$/.test(p)
+  if (
+    h !== "www.twitch.com" ||
+    !(h.endsWith(".twitch.com"))
+  ) {
+    return false;
+  }
+  return u.pathname !== "/";
 }
 
-/** Enable observation of url changes on a SPA */
+// Check if the url is Kick
+function isKick(loc: Location = window.location): boolean {
+  const u = new URL(loc.href);
+  const h = u.hostname;
+  if (
+    h !== "www.kick.com" ||
+    !(h.endsWith(".kick.com"))
+  ) {
+    return false;
+  }
+  return u.pathname !== "/";
+}
+
+// Enable observation of url changes on a SPA
 function urlListener(onChange: () => void): () => void {
   const ROUTE_EVENT = "baitblock:urlchange";
   const emit = () => window.dispatchEvent(new Event(ROUTE_EVENT));
