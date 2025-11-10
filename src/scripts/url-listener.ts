@@ -5,20 +5,22 @@ export function isUrlSupported(onStatus: (supported: boolean) => void) {
   return urlListener(() => {
     const supported = isYoutubeLive();
     onStatus(supported);
-  });
+  });;
 }
 
 /** Check if the url is YoutubeLive */
 function isYoutubeLive(loc: Location = window.location): boolean {
   const u = new URL(loc.href);
   const h = u.hostname;
+
   const isYoutube =
     h === "www.youtube.com" ||
     h === "youtube.com" ||
     h.endsWith(".youtube.com");
   if (!isYoutube) return false;
+
   const p = u.pathname;
-  return p === "/live" || p.startsWith("/live/");
+  return p === "/live" || p.startsWith("/live/")
 }
 
 /** Enable observation of url changes on a SPA */
@@ -48,11 +50,13 @@ function urlListener(onChange: () => void): () => void {
   const onHash = () => emit();
   const onYt = () => emit();
   const mo = new MutationObserver(() => emit());
-  const onRoute = () => onChange();
   window.addEventListener("popstate", onPop);
   window.addEventListener("hashchange", onHash);
   window.addEventListener("yt-navigate-finish" as any, onYt);
   mo.observe(document.documentElement, { childList: true, subtree: true });
+
+  // Listen to our custom event that fires when url changes
+  const onRoute = () => onChange();
   window.addEventListener(ROUTE_EVENT, onRoute);
 
   // Initial tick
