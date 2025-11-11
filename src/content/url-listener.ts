@@ -1,40 +1,55 @@
 // src/url-listener.ts
 
-/** Check if the url is YoutubeLive */
+/** Mastser function to check if page is supported */
 export function isPageSupported(onStatus: (supported: boolean) => void) {
   return urlListener(() => {
-    const supported = (isTwitch() || isKick());
+    const supported = !(getPageName() === null);
     onStatus(supported);
   });;
 }
 
-// Check if the url is Twitch
+/** Get page name */
+export function getPageName(): "kick" | "twitch" | null {
+  if (isTwitch()) { return "twitch"; }
+  if (isKick()) { return "kick"; }
+  return null;
+}
+
+/** Check if the url is Twitch */
 function isTwitch(loc: Location = window.location): boolean {
   const u = new URL(loc.href);
   const h = u.hostname;
   if (
-    h !== "www.twitch.com" ||
-    !(h.endsWith(".twitch.com"))
+    !(h === "www.twitch.tv" &&
+      (h.endsWith("twitch.tv")))
   ) {
     return false;
   }
-  return u.pathname !== "/";
+  if (u.pathname === "/") { return false; }
+  // Check if there's a streamer name after the first /
+  const pathParts = u.pathname.split("/").filter(p => p.length > 0);
+  if (pathParts.length === 0) { return false; }
+  return true;
 }
 
-// Check if the url is Kick
+/** Check if the url is Kick */
 function isKick(loc: Location = window.location): boolean {
   const u = new URL(loc.href);
   const h = u.hostname;
   if (
-    h !== "www.kick.com" ||
-    !(h.endsWith(".kick.com"))
+    !(h === "kick.com" &&
+      (h.endsWith("kick.com")))
   ) {
     return false;
   }
-  return u.pathname !== "/";
+  if (u.pathname === "/") { return false; }
+  // Check if there's a streamer name after the first /
+  const pathParts = u.pathname.split("/").filter(p => p.length > 0);
+  if (pathParts.length === 0) { return false; }
+  return true;
 }
 
-// Enable observation of url changes on a SPA
+/** Detect SPA URL changes */
 function urlListener(onChange: () => void): () => void {
   const ROUTE_EVENT = "baitblock:urlchange";
   const emit = () => window.dispatchEvent(new Event(ROUTE_EVENT));
