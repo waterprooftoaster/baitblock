@@ -1,6 +1,6 @@
 // src/url-listener.ts
 
-/** Mastser function to check if page is supported */
+/** Init function to check if page is supported */
 export function isPageSupported(onStatus: (supported: boolean) => void) {
   return urlListener(() => {
     const supported = !(getPageName() === null);
