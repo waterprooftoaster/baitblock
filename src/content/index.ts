@@ -1,14 +1,13 @@
 import { isPageSupported } from "./url-listener";
-import { initChatScraper } from "./chat-scraper";
+import { chatScraper } from "./scrape-kick";
 
 isPageSupported((supported) => {
   if (supported) {
     console.log("Page Supported");
 
     // Start scraping comments when page is supported
-    initChatScraper((message) => {
-      console.log(`[${message.platform.toUpperCase()}] ${message.username}: ${message.message}`);
-      // You can dispatch this to background script or handle as needed
+    chatScraper((message) => {
+      console.log(`${message.username}: ${message.message}`);
     });
   } else {
     console.log("Page Not Supported");
