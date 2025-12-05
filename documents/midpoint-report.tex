@@ -1,10 +1,10 @@
 \documentclass[letterpaper,twocolumn,10pt]{article}
-\usepackage{usenix,epsfig, endnotes,url}
+\usepackage{usenix,epsfig, endnotes,url, graphicx}
 \usepackage[colorlinks=true, urlcolor=blue, linkcolor=black, citecolor=black]{hyperref}
 \begin{document}
 
 %make title bold and 14 pt font (Latex default is non-bold, 16 pt)
-\title{\Large \bf BaitBlock: Measuring and Mitigating Phishing Propagation in YouTube Live Chats}
+\title{\Large \bf BaitBlock: Assessing and Mitigating the Prevalence of Cryptocurrency Scams on Kick }
 
 \author{
 {\rm Andy Wu}\\
@@ -17,67 +17,238 @@ B.S. Computer Engineering
 \section{Introduction}
 \subsection{Problem Statement}
 
-Live streaming platforms like Twitch and YouTube Live have become an incredibly effective attack vector for novel phishing and impersonation scams. Attackers piggyback on the trust and parasocial relationships of communities surrounding different streamers to scam viewers with fraudulent crypto prizes. Recent research reveals the alarming scope of this issue. A joint study between UCSD, UCLA, and Google \cite{liu2024give} measuring cryptocurrency giveaway scams found that scammers converted about 4 in 100,000 live stream views into victims, extracting nearly \$4.62 million from just a few hundred people during the study window.
+Live streaming platforms such as Twitch, Kick, and YouTube Live have become an increasing vector for novel phishing and impersonation scams. Attackers exploit trust and parasocial relationships within communities surrounding various streamers, then target their viewers with cryptocurrency-related scams. Live streaming is a relatively new form of media. While the first public video stream occurred in 1995, the platform that is widely regarded as the first streaming site, Justin.tv, launched in 2007. Justin.tv later rebranded as Twitch in 2011, and YouTube Live launched that year. Periscope, formerly Twitter's live stream feature, launched in 2015. Kick only arrived in 2022. Security for traditional phishing vectors has had twenty-plus years of academic scrutiny, standardized reporting, and maturing detection heuristics. The security surrounding live streams lacks those advantages. This immaturity makes live-stream environments extremely easy to exploit.
+
+Kick stands out as especially vulnerable because it is the youngest and least moderated major live streaming platform. It launched almost without guardrails, and its hands-off approach to moderation led to rapid growth but little oversight. This created an environment attractive to creators seeking minimal restrictions and resulted in a high percentage of extreme or illicit content. This same lack of enforcement and detection also makes Kick a fertile ground for large-scale scams, putting its audience at heightened risk.
+
+The lack of moderation and rapid onboarding of high-risk creators also created the ideal conditions for large scam networks to take root. Even as Kick attempts to clean up its image and operate as a legitimate competitor to Twitch and YouTube, residue from its early design choices remains. Scam bots still circulate through chats at scale, exploiting Kick’s comparatively weak security ecosystem. Gaming blog DuckyOBrien.com \cite{obrien_does_kick_have_a_bot_problem_2023} anecdotally reported that many top Kick streams in mid-2023 had titles like “giveawaycrypto2023,” “money-day,” “charity-giveaway,” etc., each spiking suddenly with tens of thousands of viewers. These streams played a pre-recorded video or minimal content that spammed chat with links to “double your crypto” sites.
+
+A recent joint study between UCSD, UCLA, and Google by Liu et al. \cite{liu_et_al_give_and_take_2024} gathered data on cryptocurrency-based scams on X, YouTube Live, and Twitch. From July 24, 2023, to January 21, 2024, the study found no identifiable cases on Twitch during the study window despite previous research indicating their abundance. But Liu et al. did find a significant amount on YouTube Live and X. During the research window, attackers netted \$1.9 million in revenue from live streams and \$2.7 million from tweets from cryptocurrency-related scams.
+
+Most likely due to how new Kick is, I could not find studies similar to Liu et al. that provide insights into Kick. However, Liu et al. did provide a perspective on the enormity of the issue on other platforms. Notably, YouTube Live viewers suffered \$1.9 million in losses during the study period. By contrast, Kick is a far more immature platform characterized by its lack of automated detection, enforcement history, and meaningful guardrails. Although no formal academic research has yet quantified the prevalence of scams on Kick, the structural vulnerabilities identified by Liu et al. strongly suggest that Kick’s exposure to fraudulent activity is likely far greater than that of Twitch or YouTube Live.
+
+And unlike Twitch or YouTube Live, Kick lacks both the maturity and the institutional experience necessary to anticipate or mitigate these threats. Research on live-streaming safety has begun to catch up to traditional media, with established platforms like Twitch now producing annual transparency reports and openly collaborating with researchers. In contrast, Kick remains poorly understood. As stated previously, I could not find a single academic and empirical source regarding Kick's rate of exposure to scam activity. Kick's opaque moderation practices, limited oversight, and unique creator ecosystem make it difficult to quantify the scale or nature of malicious activity taking place. This is a major platform governance concern in the trust and safety of Kick.
+
+To address this gap, BaitBlock will systematically measure and compare chat data from Kick and Twitch streams of similar categories. By applying the same detection model across both datasets, BaitBlock aims to accurately quantify and compare the prevalence, types, and severity of scams present on each platform. The project’s objective is to provide empirical evidence about Kick’s vulnerability to scams, evaluate how moderation practices affect scam exposure, and highlight areas where trust and safety mechanisms may need improvement. BaitBlock hopes to reveal the effects of limited moderation on an emerging streaming platform.
 
 \subsection{Motivation and Significance}
 
-Live streaming as a platform is relatively young, and academic attention has lagged behind more established social media. Phishing has been studied extensively in emails and static social network posts, but YouTube Live and Twitch chats present an ecosystem that is fast-moving and loosely moderated. Nguyen et al. \cite{nguyen2025prosper} studying the exploitation of real-time chats on X highlights how understudied this emerging attack vector is, and researchers underestimate the attacks committed by financially motivated attackers. I wish for BaitBlock to provide another source of empirical data that assists in academic and moderation expansion into this field. 
+The motive and intended damage of live-stream phishing is similar to traditional phishing scams, but the live-streams as an attack vector are far more scalable and immediate. Liu et al. \cite{liu_et_al_give_and_take_2024} found that scams on X and YouTube achieved conversion rates of roughly 1 in 1,000 tweets and 4 in 100,000 live stream views, respectively. While the average success rate of these attacks is a miniscule 0.004\%, the operation still netted millions of dollars in revenue through the sheer scale of attacks alone. Further illustrating this reach, an article from \textit{BleepingComputer} by Toulas \cite{huang_he_ma_xiao_wang_deep_dive_nft_rug_pulls_2023} analyzed data from a cybersecurity firm, Group-IB, showing that cryptocurrency scam links averaged 15,000 visits each, exposing an estimated 30 million potential victims worldwide. The number of such fraudulent websites rose by 300\% in 2022, signaling how easily scammers can now mass-produce fraudulent content. Toulas attributed the remarkably accessible scams to the wide reach of live-stream platforms and deepfake video generation tools. 
 
-That said, it is an incredibly difficult challenge to detect and prevent this new form of phishing attack entirely. Firstly, Streamers do frequently organize real promotional events like crypto giveaways and raffles. They reach out to fans and winners in the same communication channels (e.g, chatroom messages, direct messages) where impersonators attempt scams. Occasionally, the official events sponsored by prominent streamers are scams themselves. Numerous high-profile NFT and meme coin projects promoted by very popular streamers have ended in pump-and-dump collapses, with a majority of their participants suffering serious financial losses. This further blurs the boundaries between legitimate and malicious engagements on streaming platforms. It will thus be difficult to build effective filter solutions with only rule-based logic.
+Additionally, a recent USENIX study by Nguyen et al. \cite{nguyen2025prosper} tracked 181 impersonation attacks over a three-month period, with 123 additional cases identified retrospectively across a year. They defined a new category of scam: PROSPER (Payment Re-routing on Social Media via Personal Impersonation). This type of attack impersonates everyday individuals instead of high-profile streamers and injects itself into a real-time conversation. The fake account would then attempt to persuade the payment sender to reroute their transfer. Nguyen et al. attributed the prevalence of PROSPER attacks to the fast-paced nature of online conversations and the lack of anti-fraud user interface cues, a weakness that is shared by all streaming platforms. Nguyen et al. also noted that impersonation and phishing through live chats remain critically understudied despite their rapid growth. This research gap highlights a pressing need for empirical, platform-specific analysis. BaitBlock seeks to provide this by generating measurable data that can inform both future academic attention and practical moderation policy.
 
-Notably, younger fans are especially susceptible to this new form of phishing attack. While children are already more vulnerable to scams, streaming platforms have a predominantly young audience and thus increase the number of children targeted. Younger audiences who are eager to interact with their favorite streamers are much more likely to be fooled by attackers impersonating them. An article from \textit{The Independent} covered a multi-year study from RiskIQ \cite{cuthbertson2019youtube} revealed how criminals mimicked seven prominent YouTube channels, such as vlogger James Charles and commentator Philip DeFranco, and successfully tricked over 70,000 viewers with phishing links that were framed to be prize winnings.
+That said, it is an incredibly difficult challenge to detect and prevent this new form of phishing attack entirely. Firstly, Streamers do frequently organize real cryptocurrency-themed promotional events. They reach out to fans and winners in the same communication channels (e.g, chatroom messages, direct messages) where impersonators attempt scams. Occasionally, the official events sponsored by prominent streamers are scams themselves. Numerous high-profile NFT and meme coin projects promoted by very popular streamers have ended in pump-and-dump collapses. A joint research paper from Huazhong University and Pecking University in China by Huang et al. identified 7,487 rug pulls out of 173,373 NFT projects, or 4.32\%. Huang et al. detailed that this percentage is on the lower-bound, and the study uses a very strict detection for rug pulls, and the true number is most likely higher. This further blurs the boundaries between legitimate and malicious engagements on streaming platforms. It will thus be difficult to build effective filter solutions with only rule-based logic. 
+
+Younger audiences are particularly vulnerable. Streaming demographics skew young, and many underage viewers are eager to interact with their favorite creators, often without the skepticism or technical literacy to recognize sophisticated impersonation attempts. A \textit{The Independent} article by Cuthberston analyzed a multi-year study by \textit{RiskIQ} reported by \cite{cuthbertson2019youtube} revealed that scammers impersonating major YouTubers like James Charles and Philip DeFranco successfully deceived more than 70,000 users with prize-related phishing links. 
 
 \subsection{Scope and Project}
 
-BaitBlock will be scoped as a platform measurement project that will measure and flag impersonation-driven phishing scams. Due to resource restrictions, my personal preference for the YouTube Data API, and the lack of moderation on YouTube Live compared to similar platforms, BaitBlock will focus on monitoring streams on YouTube Live only. This project will be implemented as a Chrome Extension that parses any YouTube live chatroom in real-time, flags high-risk scam content, and cross-references it with platform moderation events. I will be focusing specifically on streams categorized under “Finance,” “Web3,” and “Influencer”. In my personal experience, these categories contain the largest amount of malicious chat messages.
+This project focuses on the detection and comparative measurement of scam activity within live-stream chat environments. Specifically, BaitBlock will collect, classify, and analyze chat messages from Twitch and Kick streams of similar categories, using a unified detection model to identify and quantify cryptocurrency scam prevalence. The study aims to measure how differences in platform design, moderation rigor, and community norms influence the rate and visibility of fraudulent messages. By controlling for genre and audience size, the analysis will isolate platform-level factors that contribute to scam proliferation.
+
+The scope of this research is limited to detection and measurement. It does not attempt to build end-user interventions, design moderation interfaces, or conduct large-scale behavioral studies of viewer susceptibility. Additionally, the project will not include platforms beyond Twitch and Kick, nor will it examine scams unrelated to cryptocurrency or phishing. While the findings may inform broader Trust and Safety frameworks, the work is confined to producing an empirical baseline of scam frequency and distribution across two structurally distinct live-streaming ecosystems.
+
+
 
 \subsection{Project Outcomes}
 
-BaitBlock will function as a measurement and detection tool. It will log scam-like messages, label them using both rule-based and model-based classifiers, and evaluate a platform's prevalence and moderation response under live conditions. Baitblock does not aim to halt scams or intervene in stream content directly.
+By the end of the semester, BaitBlock will operate as a complete measurement and detection system bundled and deployed as a Chrome extension. Firstly, it will capture and log Kick and Twitch chatroom messages during live streams. Using this data, the project will deliver a competent predictive model capable of assigning graded risk scores to messages in real time. My trained model will work in combination with rule-based classifiers to label chatroom messages as safe, suspicious, or unsafe.
+
+Secondly, I will compare BaitBlock’s results from Kick and Twitch to evaluate how differences in platform design, moderation infrastructure, and community behavior influence scam prevalence and message risk distribution. I wish for the comparison to provide insights into the hypothesis that Kick’s weaker moderation and minimal automated detection correlate with higher frequencies of suspicious or unsafe messages. BaitBlock’s objective is analytical and preventative; it does not seek to moderate or alter live stream content directly.
 
 \section{Related Work}
 \subsection{Core Sources}
 
-Numerous academic and gray literatures provide an excellent perspective on this issue and empirical data to build upon. The joint study Liu et al. \cite{liu2024give} mentioned previously shows how obvious scams that have a low percentage can still yield tremendous profits from their sheer volume alone. Thus, Baitblock should first focus on detecting these discernible and volume-based scams first.
+BaitBlock utilizes prior efforts that have investigated cryptocurrency giveaway scams as an empirical anchor. Numerous academic and gray literatures provide an excellent perspective on this issue. The joint study by Liu et al. \cite{liu2024give} examined attacks that have a success rate of only 0.004\%, yet the operations were still able to yield incredible profits through sheer volume alone. Thus, BaitBlock should first focus on detecting these discernible and volume-based scams.
 
-Account identity verification is another low-hanging fruit. In his article, Cuthbertson \cite{cuthbertson2019youtube} highlighted scams that impersonated high-profile influencers. These types of scams are easily spotted by comparing the senders' accounts with a database of influencers' real accounts. However, impersonations are not isolated to influential figures. Nguyen et al. \cite{nguyen2025prosper} also provide a deep look into how scammers impersonate regular individuals with AI during real-time social interactions to reroute payments on X. It is unrealistic to keep a database of every account. Thus, other techniques will be needed to guarantee authenticity for regular individuals or smaller influencers. 
+Account identity verification is another low-hanging fruit. In his article, Cuthbertson \cite{cuthbertson2019youtube} highlighted scams that impersonated high-profile influencers. These types of scams are easily spotted by comparing the senders’ accounts with a database of influencers’ real accounts. However, impersonations are not isolated to influential figures. Nguyen et al. \cite{nguyen2025prosper} also provided a deep look into how scammers impersonate regular individuals with AI during real-time social interactions to reroute payments on X. It is unrealistic to maintain a database of every account; thus, other techniques will be needed to guarantee authenticity for regular individuals or smaller influencers.
 
- The article Gorwa et al. \cite{gorwa2020algorithmic} covered in class provides a technical primer on the different techniques of content moderation with Machine Learning and an analysis of its political and societal implications. But in the context of Baitblock, I intend to train a predictive model in addition to a singular rule-based filter, as mentioned in the article.
+The article by Gorwa et al. \cite{gorwa2020algorithmic} covered in class provides a technical primer on the different techniques of content moderation with machine learning and an analysis of its political and societal implications. In the context of BaitBlock, I intend to train a predictive model in addition to a singular rule-based filter, as mentioned in the article.
 
-Twitch’s transparency report \cite{twitch2025disinfo} reported tens of millions of instances of platform enforcement against scams, which gives a bird's eye view of how widespread the issue is. The transparency reports also outline the varying efficacy of tools like Suspicious User Controls and platform policies against impersonation. I would like BaitBlock to compare the results it gathers from YouTube Live with Twitch's transparency report.
+Twitch’s transparency report \cite{twitch2025disinfo} reported tens of millions of instances of platform enforcement against scams, which provides a bird’s-eye view of how widespread the issue is. The transparency reports also outline the varying efficacy of tools like Suspicious User Controls and platform policies against impersonation. I would like BaitBlock to compare the results it gathers from Kick and Twitch with Twitch’s transparency report.
 
-A good friend and fellow developer, Omobolaji Alabi, developed a useful project \cite{slinkywalnut_divhacks_repo} that can detect and verify claims for the 2025 Divhacks Hackathon with his team. Specifically, the workflow used to detect what claims are made in a page will be incredibly helpful in detecting what claims are made in a chat message.
+A good friend and fellow developer, Omobolaji Alabi, developed a useful project \cite{slinkywalnut_divhacks_repo} that can detect and verify claims for the 2025 DivHacks Hackathon with his team. Specifically, the workflow used to detect what claims are made on a page will be incredibly helpful in detecting what claims are made in a chat message.
 
 \subsection{Identify Gaps}
 
-Cuthbertson \cite{cuthbertson2019youtube} and Nguyen et al. \cite{nguyen2025prosper} covered scams that do not use livestream chats as attack vectors. Thus, I cannot expect BaitBlock to detect data comparable to these two articles. In addition, Alabi and his team \cite{slinkywalnut_divhacks_repo} did not design their claim detection logic to work in the fast-paced livestream environment. I may need to lean down their multi-step process for cost and speed-saving reasons. 
+Cuthbertson  and Nguyen et al. covered scams that do not use live stream chats as attack vectors. Thus, I cannot expect BaitBlock to detect data comparable to these two articles. In addition, Alabi and his team did not design their claim detection logic to work in the fast-paced live stream environment. I may need to lean down their multi-step process for cost and speed-saving reasons. 
+
+Additionally, Twitch’s transparency reports present only empirical data from the past. As Liu et al. demonstrated when their findings diverged significantly from prior studies, BaitBlock’s dataset can offer forward-looking insight into Twitch’s evolving practices, particularly where its metrics differ from those disclosed in the official transparency reports. 
 
 \section{Research Plan and Current Status}
 \subsection{Objectives}
 
-By the end of the term, BaitBlock will deliver three key outcomes:
+There are five core functionalities that BaitBlock must have to achieve the desired project outcomes.
 \begin{enumerate}
-\item A functional Chrome Extension that flags likely scams in YouTube Live chats.
-\item A labeled dataset of both scam and benign messages captured from active livestreams.
-\item A prediction model that identifies patterns in livestream phishing messages, trained on data aggregated from YouTube Live.
+    \item Deploy successfully as a Chrome extension.
+    \item Read incoming and past chatroom messages.
+    \item Analyze every read message with a predictive model.
+    \item Label every message in the chatroom along a graded risk spectrum. (e.g, safe, suspicious, unsafe)
+    \item Store results on a backend database for analytics.
 \end{enumerate}
 
 \subsection{Methodological Approach}
 
-The technical approach has been overhauled since the intention document. BaitBlock will still be built with Typescript and React packaged with Vite for its speed advantanges. However, the YouTube Data API has a low polling rate and thus is unsuitable to collect the large amounts of comments in a YouTube Live. Instead, comments will be aggregated through a script to parse the DOM. The API will only be used to collect identifying information on the stream itself.
+The methodological approach has been mostly overhauled since the Intention Document. Previously, I planned on using YouTube’s Data API to receive incoming chatroom messages. However, the low polling rate limits of the API make this approach unsuitable for large-scale data collection. The structural design of YouTube presents numerous challenges as well. YouTube live streams do not contain a different URL format compared to regular videos; thus, it is difficult to identify whether the user is watching a live stream or a static video. For these reasons, I have transitioned my focus toward developing BaitBlock for Twitch and Kick.
 
-The first and foremost objective is for BaitBlock to be a functional Chrome extension that can read, store, and parse YouTube Live chats. This step serves as the foundation for all other objectives. 
+Nevertheless, the overall requirements of BaitBlock remain the same as at the start of the project. In this section, I will expand on the strategies planned to achieve the objectives listed in Section 3.1 above.
+\begin{enumerate}
+    \item Deploy successfully as a Chrome extension.
+    \begin{itemize}
+        \item Chrome and other browsers import extensions as a Javascript bundle, thus, Vite will be used to build this project. It is the fastest and most widely used framework for lightweight Javascript projects. I will use the tech stack Typescript, React, and TailwindCSS because of personal preferences..
+    \end{itemize}
+    \item Read incoming and past chatroom messages.
+    \begin{itemize}
+        \item To avoid API rate limits, DOM scraping is the most reliable method to achieve real-time capture. Javascript's MutationObserver can reliably detect DOM changes, and notify my script to capture the new message. 
+    \end{itemize}
+    \item Store results on a backend database for analytics.
+    \begin{itemize}
+        \item  BaitBlock must be a full-stack extension. A background service worker must saturate a backend database.
+        \item For around a week, I will only be capturing and storing chat messages in a local database. Then, the messages would be ported into the claim detection workflow from Omobolaji Alabi mentioned in section 2.1 for annotation. Due to the enormity of data, manual annotation would not be possible.
+    \end{itemize}
+    \item Analyze every read message with a predictive model.
+    \begin{itemize}
+        \item BaitBlock's predictive model would be based on existing moderation models from HuggingFace. It will be trained on the annotated data with TensorFlow and PyTorch.
+    \end{itemize}
+    \item Label every message in the chatroom along a graded risk spectrum. (e.g, safe, suspicious, unsafe)
+    \begin{itemize}
+        \item BaitBlock will follow Chrome's official guidelines on DOM injection. The label will be injected beside the chat message for seamless integration with the user.
+    \end{itemize}
+\end{enumerate}
 
-YouTube is a single-page application (SPA). This means the website does not refresh as the user navigates different pages. From a programming perspective, detecting URL changes is difficult. A simple function that parses the user's URL on mount will not work, as the function only runs on refresh. Instead, I will most likely leverage JavaScript's native class MutationObserver and use listeners for window events.
 
-Aggregated chats will be stored in a local SQLite database modeled by Prisma. The chats will then be slowly uploaded onto ChatGPT for simple data annotation. Due to the enormity of data, manual annotation will not be possible. LLMs like ChatGPT have been proven to be reliable for reading and media analysis and acceptable in this use case. The prediction model will be based on existing models from Hugging Face, trained on the chat data with TensorFlow and PyTorch.
+
 
 \subsection{Progress to Date}
 
-As of 20205 November 9th, BaitBlock can be successfully imported into Chrome. Additionally, the scripts can correctly identify when the user's watching a YouTube livestream through a combination of window event listeners and JavaScript's MutationObserver. Baitblock is fully open source and licensed under Apache 2.0. The link to the development branch is the following: https://github.com/waterprooftoaster/baitblock/tree/youtube-live \cite{wu_baitblock_youtube_live_2025}. 
+A prototype of BaitBlock is under development. It is fully open source and licensed under Apache 2.0. The link to the GitHub repository is "https://github.com/waterprooftoaster/baitblock". Currently, BaitBlock has successfully achieved objectives one and two.
+
+Kick and Twitch are both single-page applications (SPAs), meaning they do not refresh as the URL changes. This design allows the user experience to feel seamless and continuous; however, it also means that standard URL checkers are not sufficient to determine whether a user is watching a live stream. A custom urlListener function will need to be implemented to notify the script when the URL changes.
+
+{\tt \small
+\begin{verbatim}
+function urlListener(onChange: () => void): () => void {
+  const ROUTE_EVENT = "baitblock:urlchange";
+  const emit = () => window.dispatchEvent(
+    new Event(ROUTE_EVENT)
+  );
+
+  // Patch history methods
+  function patchHistory(method: "pushState" | "replaceState") {
+    const original =
+    history[method] as typeof history.pushState;
+    (history as any)[method] = function (
+      this: History,
+      data: any,
+      unused: string,
+      url?: string | URL | null
+    ) {
+      const result = (original as any).call(
+        this, 
+        data, 
+        unused, 
+        url);
+      emit();
+      return result;
+    } as typeof original;
+  }
+  patchHistory("pushState");
+  patchHistory("replaceState");
+
+  // Listen to events could be url changes
+  const onPop = () => emit();
+  const onHash = () => emit();
+  const onYt = () => emit();
+  window.addEventListener("popstate", onPop);
+  window.addEventListener("hashchange", onHash);
+  window.addEventListener(
+    "yt-navigate-finish" as any, 
+    onYt
+    );
+
+  // Listen to our custom event that fires when url changes
+  const onRoute = () => onChange();
+  window.addEventListener(ROUTE_EVENT, onRoute);
+
+  // Initial tick
+  emit();
+
+  // Destructor
+  return () => {
+    window.removeEventListener("popstate", onPop);
+    window.removeEventListener("hashchange", onHash);
+    window.removeEventListener("yt-navigate-finish" as any, onYt);
+    window.removeEventListener(ROUTE_EVENT, onRoute);
+  };
+}
+\end{verbatim}
+}
+
+The code above uses TS's eventListener to listen for URL. changes. This way, my script can check if a user is currently on a live-stream everytime the URL changes.
+
+ Kick's chatroom container <div> has the id "channel-chatroom". This allows for Typescript to find the chat messages easily. 
+
+{\tt \small
+\begin{verbatim}
+
+function findKickChatContainer(
+    onFound: (container: Element) => void): void 
+{
+  const tryFind = () => {
+    const container = 
+    document.getElementById("channel-chatroom");
+    if (container) {
+      onFound(container);
+    } else {
+      setTimeout(tryFind, 500); // Retry every .5s
+    }
+  };
+  tryFind();
+}
+
+\end{verbatim}
+}
+
+Using the native TS class "getElementById", it is intuitive to find the chat container in any given stream. A MutationObserver then checks for updates within the page to capture new messages.
+
+{\tt \small
+\begin{verbatim}
+
+const observer = new MutationObserver(
+    (mutations) => 
+{
+    for (const mutation of mutations) {
+      if (mutation.type === "childList") {
+        mutation.addedNodes.forEach(
+            (node) => 
+        {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const messageEl = node as Element;
+            const msg = parseKickMessage(messageEl);
+            if (
+                msg && 
+                !processedMessageIds.has(
+                    msg.username + 
+                    msg.timestamp
+                )
+            ) {
+            processedMessageIds.add(
+                msg.username + 
+                msg.timestamp
+            );
+            onNewMessage(msg);
+            }
+          }
+        });
+      }
+    }
+  });
+
+\end{verbatim}
+}
+
 
 \subsection{Next Steps}
-The immediate next step would be to identify the DOM location of the chat messages so that HTML can be injected next to suspected chats. The first filter algorithm will be extremely simple; all chats containing links will be flagged. However, I will begin to test the prediction model before the end of this term. 
+The project still has three main objectives to complete. It is currently collecting data to train the future predictive model. I predict this will be the most time consuming and technically demanding portion of the project. Objective four and five are subjects I am familiar with as a developer. 
 
 \bibliographystyle{abbrv}
 \bibliography{refs}
