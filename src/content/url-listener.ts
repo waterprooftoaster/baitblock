@@ -19,16 +19,20 @@ export function getPageName(): "kick" | "twitch" | null {
 function isTwitch(loc: Location = window.location): boolean {
   const u = new URL(loc.href);
   const h = u.hostname;
-  if (
-    !(h === "www.twitch.tv" &&
-      (h.endsWith("twitch.tv")))
-  ) {
+
+  if (!(h === "twitch.tv" && h.endsWith("twitch.tv"))) {
     return false;
   }
   if (u.pathname === "/") { return false; }
-  // Check if there's a streamer name after the first /
+
   const pathParts = u.pathname.split("/").filter(p => p.length > 0);
   if (pathParts.length === 0) { return false; }
+
+  // Not a streamer page: /category/...
+  if (pathParts[0].toLowerCase() === "category") {
+    return false;
+  }
+
   return true;
 }
 
@@ -36,64 +40,43 @@ function isTwitch(loc: Location = window.location): boolean {
 function isKick(loc: Location = window.location): boolean {
   const u = new URL(loc.href);
   const h = u.hostname;
-  if (
-    !(h === "kick.com" &&
-      (h.endsWith("kick.com")))
-  ) {
+
+  if (!(h === "kick.com" && h.endsWith("kick.com"))) {
     return false;
   }
   if (u.pathname === "/") { return false; }
-  // Check if there's a streamer name after the first /
+
   const pathParts = u.pathname.split("/").filter(p => p.length > 0);
   if (pathParts.length === 0) { return false; }
+
+  // Not a streamer page: /category/...
+  if (pathParts[0].toLowerCase() === "category") {
+    return false;
+  }
+
   return true;
 }
 
-/** Detect SPA URL changes */
+/** Detect SPA URL changes via polling */
 function urlListener(onChange: () => void): () => void {
-  const ROUTE_EVENT = "baitblock:urlchange";
-  const emit = () => window.dispatchEvent(new Event(ROUTE_EVENT));
+  let lastUrl = location.href;
 
-  // Patch history methods
-  function patchHistory(method: "pushState" | "replaceState") {
-    const original = history[method] as typeof history.pushState;
-    (history as any)[method] = function (
-      this: History,
-      data: any,
-      unused: string,
-      url?: string | URL | null
-    ) {
-      const result = (original as any).call(this, data, unused, url);
-      emit();
-      return result;
-    } as typeof original;
-  }
-  patchHistory("pushState");
-  patchHistory("replaceState");
+  const check = () => {
+    const current = location.href;
+    if (current !== lastUrl) {
+      lastUrl = current;
+      onChange();
+    }
+  };
 
-  // Listen to events could be url changes
-  const onPop = () => emit();
-  const onHash = () => emit();
-  const onYt = () => emit();
-  // const mo = new MutationObserver(() => emit());
-  window.addEventListener("popstate", onPop);
-  window.addEventListener("hashchange", onHash);
-  window.addEventListener("yt-navigate-finish" as any, onYt);
-  // mo.observe(document.documentElement, { childList: true, subtree: true });
-
-  // Listen to our custom event that fires when url changes
-  const onRoute = () => onChange();
-  window.addEventListener(ROUTE_EVENT, onRoute);
+  // Check regularly (tune interval as needed)
+  const intervalId = window.setInterval(check, 500);
 
   // Initial tick
-  emit();
+  check();
 
   // Destructor
   return () => {
-    window.removeEventListener("popstate", onPop);
-    window.removeEventListener("hashchange", onHash);
-    window.removeEventListener("yt-navigate-finish" as any, onYt);
-    window.removeEventListener(ROUTE_EVENT, onRoute);
-    // mo.disconnect();
+    window.clearInterval(intervalId);
   };
 }

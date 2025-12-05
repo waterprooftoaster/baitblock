@@ -7,7 +7,9 @@ isPageSupported((supported) => {
 
     // Start scraping comments when page is supported
     chatScraper((message) => {
-      console.log(`${message.username}: ${message.message}`);
+      const username = message.username ? message.username : "Unknown";
+      const messageText = message.message ? message.message : "Unknown";
+      console.log(`${username}: ${messageText}`);
     });
   } else {
     console.log("Page Not Supported");

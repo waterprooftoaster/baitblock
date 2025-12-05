@@ -4,7 +4,7 @@ import { getPageName } from "./url-listener";
 /** Represents a single chat message */
 interface ChatMessage {
   username?: string;
-  message?: string;
+  message: string;
   timestamp?: number;
   emoteId?: string;
   replyTo?: string;
@@ -26,9 +26,9 @@ export function chatScraper(onNewMessage: (msg: ChatMessage) => void): void {
 /** Observe Kick chat for new messages */
 function observeKickChat(onNewMessage: (msg: ChatMessage) => void): void {
   // Find chat container
-  let count = 0;
   // Async promise because we cannot begin without finding the container div
   const tryFind = (): Promise<Element | null> => {
+    let count = 0;
     const container = document.getElementById("chatroom-messages");
     if (container) {
       console.log("scrape-kick: found Kick chat container");
@@ -42,22 +42,29 @@ function observeKickChat(onNewMessage: (msg: ChatMessage) => void): void {
     console.warn("scrape-kick: unable to find Kick chat container");
     return Promise.resolve(null);
   };
+
+  // Setup MutationObserver only after we find the container
   tryFind().then((chatContainer) => {
     if (!chatContainer) { return; }
     const seenMessages = new Set<string>();
 
+    // Get existing messages
+    getExistingMessages(chatContainer).forEach((msg) => { onNewMessage(msg); });
+
     // Setup MutationObserver to detect new messages
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
-        if (mutation.type !== "childList") {
+        if (mutation.type === "childList") {
           mutation.addedNodes.forEach((node) => {
+
             // Safety checks to see if node is valid and a message 
-            if (node.nodeType === Node.ELEMENT_NODE) { return; }
+            if (node.nodeType !== Node.ELEMENT_NODE) { return; }
             const element = node as Element;
             if (!element.hasAttribute("data-index")) {
               console.log("scrape-kick: skipped non-message element");
               return;
             }
+
             // Save seen ids to avoid dupes
             const id = element.getAttribute("data-index");
             if (!id || seenMessages.has(id)) { return; }
@@ -79,6 +86,21 @@ function observeKickChat(onNewMessage: (msg: ChatMessage) => void): void {
   });
 }
 
+/** Get all existing messages: */
+function getExistingMessages(chatContainer: Element): ChatMessage[] {
+  if (!chatContainer) { return []; }
+  const messages: ChatMessage[] = [];
+
+  // Iterate through existing messages
+  const messageElements = chatContainer.children[0].children;
+  for (const element of messageElements) {
+    const parsedMessage = parseMessage(element);
+    messages.push(parsedMessage!);
+  }
+
+  return messages;
+}
+
 /** Parse a Kick message element */
 function parseMessage(root: Element): ChatMessage | null {
   // Helper to convert "00:00 PM" into Unix timestamp
@@ -96,26 +118,26 @@ function parseMessage(root: Element): ChatMessage | null {
     return parsed.getTime();
   }; // End convertToUnix
 
-  const wrappers = root.children;
 
   // Reply message structure
-  if (wrappers.length > 1) {
+  if (root.children.length > 1) {
     return {
-      replyTo: "parsing replies not implemented yet"
+      replyTo: "parsing replies not implemented yet",
+      message: "poop"
     };
   }
 
   // Normal Message Structure
   else {
     try {
-      const message = (((wrappers[0]).children[0]).children);
+      const messageBody = (((root.children[0]).children[0]).children);
 
       // 1. Timestamp
-      const time = convertToUnix(message[0].textContent?.trim());
+      const time = convertToUnix(messageBody[0].textContent?.trim());
 
       // 2. Username
       let username: string | null = null;
-      const userEl = message[1];
+      const userEl = messageBody[1];
       for (const child of userEl.children) {
         if (child.nodeName === 'BUTTON') {
           username = child.textContent?.trim() || null;
@@ -124,17 +146,23 @@ function parseMessage(root: Element): ChatMessage | null {
 
       // 3. Message Content
       let emoteId: string | null = null;
-      const contentEl = message[3];
+      let text: string;
+      const contentEl = messageBody[3];
       for (const child of contentEl.children) {
         if (child.nodeName === 'SPAN') {
           emoteId = child.getAttribute('data-emote-id') || null;
         }
       }
-      const text = contentEl.textContent?.trim() || null;
+      if (contentEl.textContent) {
+        text = contentEl.textContent.trim();
+      }
+      else {
+        text = `${emoteId ? `emoteId:${emoteId}` : ""}`;
+      }
 
       return {
         username: username ? username : undefined,
-        message: text ? text : undefined,
+        message: text,
         timestamp: time ? time : undefined,
         emoteId: emoteId ? emoteId : undefined
       };
