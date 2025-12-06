@@ -8,6 +8,8 @@ isPageSupported((supported) => {
     // Start scraping comments when page is supported
 
     chatScraper((message) => {
+      if (!message) { return; }
+
       // Send to bg script
       chrome.runtime.sendMessage({
         type: "newChatMessage",
