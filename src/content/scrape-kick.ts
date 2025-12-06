@@ -4,9 +4,9 @@ import { getPageName } from "./url-listener";
 /** Represents a single chat message */
 interface ChatMessage {
   username?: string;
-  message: string;
-  timestamp?: number;
+  text?: string;
   emoteId?: string;
+  timestamp?: number;
   isReply: boolean;
 }
 
@@ -125,7 +125,7 @@ function parseMessage(root: Element, id: string | null): ChatMessage | null {
   const parseMessageBody = (messageBody: HTMLCollection, id: string | null): ChatMessage | null => {
     try {
       if (messageBody.length !== 4) {
-        console.warn(`scrape-kick: body structure unexpected messageID: ${id}`);
+        console.log(`scrape-kick: body structure unexpected messageID: ${id}`);
         return null;
       }
       // 1. Timestamp
@@ -142,7 +142,7 @@ function parseMessage(root: Element, id: string | null): ChatMessage | null {
 
       // 3. Message Content
       let emoteId: string | null = null;
-      let content: string;
+      let text: string | null = null;
       const contentEl = messageBody[3];
       for (const child of contentEl.children) {
         if (child.nodeName === 'SPAN') {
@@ -150,15 +150,12 @@ function parseMessage(root: Element, id: string | null): ChatMessage | null {
         }
       }
       if (contentEl.textContent) {
-        content = contentEl.textContent.trim();
-      }
-      else {
-        content = `${emoteId ? `emoteId:${emoteId}` : ""}`;
+        text = contentEl.textContent.trim();
       }
 
       return {
         username: username ? username : undefined,
-        message: content,
+        text: text ? text : undefined,
         timestamp: time ? time : undefined,
         emoteId: emoteId ? emoteId : undefined,
         isReply: false

@@ -7,8 +7,15 @@ isPageSupported((supported) => {
 
     // Start scraping comments when page is supported
     chatScraper((message) => {
+      let messageText = "";
       const username = message.username ? message.username : "Unknown";
-      const messageText = message.message ? message.message : "Unknown";
+      if (!message) { return; }
+      if (message.text) {
+        messageText += message.text;
+      }
+      if (message.emoteId) {
+        messageText += ` [emoteId:${message.emoteId}]`;
+      }
       console.log(`${username}: ${messageText}`);
     });
   } else {
