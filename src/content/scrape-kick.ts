@@ -7,7 +7,7 @@ interface ChatMessage {
   message: string;
   timestamp?: number;
   emoteId?: string;
-  replyTo?: string;
+  isReply: boolean;
 }
 
 /** Initialize chat scraping for the current page */
@@ -71,7 +71,7 @@ function observeKickChat(onNewMessage: (msg: ChatMessage) => void): void {
             seenMessages.add(id);
 
             // Callback with parsed message
-            const parsedMessage = parseMessage(element);
+            const parsedMessage = parseMessage(element, id);
             if (parsedMessage) { onNewMessage(parsedMessage); }
           });
         }
@@ -94,7 +94,8 @@ function getExistingMessages(chatContainer: Element): ChatMessage[] {
   // Iterate through existing messages
   const messageElements = chatContainer.children[0].children;
   for (const element of messageElements) {
-    const parsedMessage = parseMessage(element);
+    const id = element.getAttribute("data-index");
+    const parsedMessage = parseMessage(element, id);
     messages.push(parsedMessage!);
   }
 
@@ -102,7 +103,7 @@ function getExistingMessages(chatContainer: Element): ChatMessage[] {
 }
 
 /** Parse a Kick message element */
-function parseMessage(root: Element): ChatMessage | null {
+function parseMessage(root: Element, id: string | null): ChatMessage | null {
   // Helper to convert "00:00 PM" into Unix timestamp
   const convertToUnix = (timeStr: string): number | null => {
     // Today's date + Kick's time (Kick does not include date)
@@ -116,22 +117,11 @@ function parseMessage(root: Element): ChatMessage | null {
     const parsed = new Date(full);
     if (isNaN(parsed.getTime())) return null;
     return parsed.getTime();
-  }; // End convertToUnix
+  }; // End of convertToUnix
 
-
-  // Reply message structure
-  if (root.children.length > 1) {
-    return {
-      replyTo: "parsing replies not implemented yet",
-      message: "poop"
-    };
-  }
-
-  // Normal Message Structure
-  else {
+  // Helper to parse message body
+  const parseMessageBody = (messageBody: HTMLCollection): ChatMessage | null => {
     try {
-      const messageBody = (((root.children[0]).children[0]).children);
-
       // 1. Timestamp
       const time = convertToUnix(messageBody[0].textContent?.trim());
 
@@ -146,7 +136,7 @@ function parseMessage(root: Element): ChatMessage | null {
 
       // 3. Message Content
       let emoteId: string | null = null;
-      let text: string;
+      let content: string;
       const contentEl = messageBody[3];
       for (const child of contentEl.children) {
         if (child.nodeName === 'SPAN') {
@@ -154,21 +144,47 @@ function parseMessage(root: Element): ChatMessage | null {
         }
       }
       if (contentEl.textContent) {
-        text = contentEl.textContent.trim();
+        content = contentEl.textContent.trim();
       }
       else {
-        text = `${emoteId ? `emoteId:${emoteId}` : ""}`;
+        content = `${emoteId ? `emoteId:${emoteId}` : ""}`;
       }
 
       return {
         username: username ? username : undefined,
-        message: text,
+        message: content,
         timestamp: time ? time : undefined,
-        emoteId: emoteId ? emoteId : undefined
+        emoteId: emoteId ? emoteId : undefined,
+        isReply: false
       };
     }
     catch (error) {
       console.warn("scrape-kick: error parsing message", error);
+      return null;
+    }
+  } // End of parseMessageBody
+
+  // Main parsing logic
+  const messageBody = (((root.children[0]).children[0]).children);
+  // Reply message structure
+  if (messageBody.length === 2) {
+    try {
+      const replyMessageBody = messageBody[1].children;
+      return parseMessageBody(replyMessageBody);
+    }
+    catch (error) {
+      console.warn(`scrape-kick: error parsing reply messageId: ${id}, error: ${error}`);
+      return null;
+    }
+  }
+
+  // Normal Message Structure
+  else {
+    try {
+      return parseMessageBody(messageBody);
+    }
+    catch (error) {
+      console.warn(`scrape-kick: error parsing normal messageId: ${id}, error: ${error}`);
       return null;
     }
   }
