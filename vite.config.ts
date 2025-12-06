@@ -14,10 +14,15 @@ export default defineConfig({
       input: {
         index: resolve(__dirname, "index.html"),
         content: resolve(__dirname, "src/content/index.ts"),
+        background: resolve(__dirname, "src/background/index.ts")
       },
       output: {
         entryFileNames: ({ name }) =>
-          name === "content" ? "content.js" : "[name].js",
+          name === "content"
+            ? "content.js"
+            : name === "background"
+              ? "background.js"
+              : "[name].js",
         chunkFileNames: "assets/[name].js",
         assetFileNames: "assets/[name][extname]",
       },

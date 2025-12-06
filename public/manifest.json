@@ -9,6 +9,10 @@
   "host_permissions": [
     "https://*/*"
   ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
   "content_scripts": [
     {
       "matches": [

@@ -1,11 +1,12 @@
+/// <reference types="chrome" />
 import { isPageSupported } from "./url-listener";
 import { chatScraper } from "./scrape-kick";
 
 isPageSupported((supported) => {
   if (supported) {
     console.log("Page Supported");
-
     // Start scraping comments when page is supported
+
     chatScraper((message) => {
       // Send to bg script
       chrome.runtime.sendMessage({
@@ -25,7 +26,8 @@ isPageSupported((supported) => {
       }
       console.log(`${username}: ${messageText}`);
     });
-  } else {
+  }
+  else {
     console.log("Page Not Supported");
   }
 })
