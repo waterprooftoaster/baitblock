@@ -96,7 +96,9 @@ function getExistingMessages(chatContainer: Element): ChatMessage[] {
   for (const element of messageElements) {
     const id = element.getAttribute("data-index");
     const parsedMessage = parseMessage(element, id);
-    messages.push(parsedMessage!);
+    if (parsedMessage) {
+      messages.push(parsedMessage);
+    }
   }
 
   return messages;
@@ -120,8 +122,12 @@ function parseMessage(root: Element, id: string | null): ChatMessage | null {
   }; // End of convertToUnix
 
   // Helper to parse message body
-  const parseMessageBody = (messageBody: HTMLCollection): ChatMessage | null => {
+  const parseMessageBody = (messageBody: HTMLCollection, id: string | null): ChatMessage | null => {
     try {
+      if (messageBody.length !== 4) {
+        console.warn(`scrape-kick: body structure unexpected messageID: ${id}`);
+        return null;
+      }
       // 1. Timestamp
       const time = convertToUnix(messageBody[0].textContent?.trim());
 
@@ -170,7 +176,7 @@ function parseMessage(root: Element, id: string | null): ChatMessage | null {
   if (messageBody.length === 2) {
     try {
       const replyMessageBody = messageBody[1].children;
-      return parseMessageBody(replyMessageBody);
+      return parseMessageBody(replyMessageBody, id);
     }
     catch (error) {
       console.warn(`scrape-kick: error parsing reply messageId: ${id}, error: ${error}`);
@@ -181,7 +187,7 @@ function parseMessage(root: Element, id: string | null): ChatMessage | null {
   // Normal Message Structure
   else {
     try {
-      return parseMessageBody(messageBody);
+      return parseMessageBody(messageBody, id);
     }
     catch (error) {
       console.warn(`scrape-kick: error parsing normal messageId: ${id}, error: ${error}`);
