@@ -1,7 +1,7 @@
 /// <reference types="chrome" />
 import { supabaseClient } from "../supabase";
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request.type === "newChatMessage") {
     const message = request.payload;
 
