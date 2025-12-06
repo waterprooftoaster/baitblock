@@ -7,6 +7,13 @@ isPageSupported((supported) => {
 
     // Start scraping comments when page is supported
     chatScraper((message) => {
+      // Send to bg script
+      chrome.runtime.sendMessage({
+        type: "newChatMessage",
+        payload: message
+      })
+
+      // Print to console
       let messageText = "";
       const username = message.username ? message.username : "Unknown";
       if (!message) { return; }
