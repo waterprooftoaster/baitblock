@@ -6,7 +6,6 @@ interface ChatMessage {
   username?: string;
   text?: string;
   emoteId?: string;
-  timestamp?: number;
   isReply: boolean;
 }
 
@@ -106,20 +105,6 @@ function getExistingMessages(chatContainer: Element): ChatMessage[] {
 
 /** Parse a Kick message element */
 function parseMessage(root: Element, id: string | null): ChatMessage | null {
-  // Helper to convert "00:00 PM" into Unix timestamp
-  const convertToUnix = (timeStr: string): number | null => {
-    // Today's date + Kick's time (Kick does not include date)
-    const today = new Date();
-    const dateStr = today.toISOString().split("T")[0]; // "2025-12-04"
-
-    // Create "2025-12-04 08:09 PM"
-    const full = `${dateStr} ${timeStr}`;
-
-    // Let JS parse it
-    const parsed = new Date(full);
-    if (isNaN(parsed.getTime())) return null;
-    return parsed.getTime();
-  }; // End of convertToUnix
 
   // Helper to parse message body
   const parseMessageBody = (messageBody: HTMLCollection, id: string | null): ChatMessage | null => {
@@ -128,10 +113,8 @@ function parseMessage(root: Element, id: string | null): ChatMessage | null {
         console.log(`scrape-kick: body structure unexpected messageID: ${id}`);
         return null;
       }
-      // 1. Timestamp
-      const time = convertToUnix(messageBody[0].textContent?.trim());
 
-      // 2. Username
+      // 1. Username
       let username: string | null = null;
       const userEl = messageBody[1];
       for (const child of userEl.children) {
@@ -140,7 +123,7 @@ function parseMessage(root: Element, id: string | null): ChatMessage | null {
         }
       }
 
-      // 3. Message Content
+      // 2. Message Content
       let emoteId: string | null = null;
       let text: string | null = null;
       const contentEl = messageBody[3];
@@ -156,7 +139,6 @@ function parseMessage(root: Element, id: string | null): ChatMessage | null {
       return {
         username: username ? username : undefined,
         text: text ? text : undefined,
-        timestamp: time ? time : undefined,
         emoteId: emoteId ? emoteId : undefined,
         isReply: false
       };

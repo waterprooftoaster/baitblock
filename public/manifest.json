@@ -4,7 +4,9 @@
   "version": "1.0",
   "description": "Block bait links and unwanted content.",
   "permissions": [
-    "scripting"
+    "scripting",
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
     "https://*/*"

@@ -17,16 +17,16 @@ isPageSupported((supported) => {
       })
 
       // Print to console
-      let messageText = "";
-      const username = message.username ? message.username : "Unknown";
-      if (!message) { return; }
-      if (message.text) {
-        messageText += message.text;
-      }
-      if (message.emoteId) {
-        messageText += ` [emoteId:${message.emoteId}]`;
-      }
-      console.log(`${username}: ${messageText}`);
+      // let messageText = "";
+      // const username = message.username ? message.username : "Unknown";
+      // if (!message) { return; }
+      // if (message.text) {
+      //   messageText += message.text;
+      // }
+      // if (message.emoteId) {
+      //   messageText += ` [emoteId:${message.emoteId}]`;
+      // }
+      // console.log(`${username}: ${messageText}`);
     });
   }
   else {
