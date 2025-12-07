@@ -70,7 +70,7 @@ function urlListener(onChange: () => void): () => void {
   };
 
   // Check regularly (tune interval as needed)
-  const intervalId = window.setInterval(check, 500);
+  const intervalId = window.setInterval(check, 250);
 
   // Initial tick
   check();

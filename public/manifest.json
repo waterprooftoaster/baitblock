@@ -4,11 +4,17 @@
   "version": "1.0",
   "description": "Block bait links and unwanted content.",
   "permissions": [
-    "scripting"
+    "scripting",
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
     "https://*/*"
   ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
   "content_scripts": [
     {
       "matches": [
