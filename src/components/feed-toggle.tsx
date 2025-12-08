@@ -27,7 +27,8 @@ export function FeedToggle() {
             type: 'feedToggle',
             enabled: newState
           }).catch(() => {
-            // Silently ignore errors for tabs that don't have content script
+            // Ignore errors for tabs that don't have content script
+            console.log(`No content script in tab: ${tab.id}`);
           });
         }
       });

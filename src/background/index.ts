@@ -20,25 +20,22 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
           .from("kick_messages")
           .insert([
             {
+              stream_name: message.streamName || null,
               username: message.username || null,
               text: message.text || null,
-              emoteId: message.emoteId || null,
-              timeStamp: new Date().toISOString(),
-              isReply: message.isReply || false
+              emote_id: message.emoteId || null,
+              timestamp: new Date().toISOString(),
             },
           ])
+
+          // Print out the inserted line for debugging
           .select();
         console.log("Supabase insert result:", { data, error });
-
-        if (error) {
-          console.error("Error inserting message:", error);
-          sendResponse({ success: false, error: error.message });
-        } else {
-          console.log("Message inserted successfully:", data);
-          sendResponse({ success: true, data });
-        }
-      } catch (error) {
-        console.error("Unexpected error:", error);
+        console.log("Message inserted successfully:", data);
+        sendResponse({ success: true, data });
+      }
+      catch (error) {
+        console.error("Error inserting message:", error);
         const errorMessage = error instanceof Error ? error.message : String(error);
         sendResponse({ success: false, error: errorMessage });
       }
