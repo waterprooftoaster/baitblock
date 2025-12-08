@@ -10,10 +10,8 @@ export function isValidPage(onName: (supported: string) => void) {
 
 /* Get stream name, called by scraping workflow as well*/
 export function getStreamName(): string | null {
-  const twitchStreamName = isTwitch();
   const KickStreamName = isKick();
   if (KickStreamName) { return KickStreamName; }
-  else if (twitchStreamName) { return twitchStreamName; }
   return null;
 }
 
@@ -40,30 +38,6 @@ function urlListener(onChange: () => void): () => void {
   return () => {
     window.clearInterval(intervalId);
   };
-}
-
-/** Check if the url is Twitch and return stream name if it is */
-function isTwitch(loc: Location = window.location): string | null {
-  const u = new URL(loc.href);
-  const h = u.hostname;
-
-  // Twitch domain check
-  if (!(h === "twitch.tv" && h.endsWith("twitch.tv"))) {
-    return null;
-  }
-  if (u.pathname === "/") { return null; }
-
-  // Get stream name
-  const pathParts = u.pathname.split("/").filter(p => p.length > 0);
-  const streamName = pathParts[0].toLowerCase();
-  if (pathParts.length === 0) { return null; }
-
-  // Not a streamer page: /category/...
-  if (streamName === "category") {
-    return null;
-  }
-
-  return streamName;
 }
 
 /** Check if the url is Kick return stream name if it is */
