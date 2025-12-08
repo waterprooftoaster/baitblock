@@ -1,18 +1,18 @@
 // src/content/chat-scraper.ts
-import { getPageName } from "./url-listener";
+import { getStreamName } from "./url-listener";
 
 /** Represents a single chat message */
 interface ChatMessage {
+  streamName?: string;
   username?: string;
   text?: string;
   emoteId?: string;
-  isReply: boolean;
 }
 
 /** Initialize chat scraping for the current page */
 export function chatScraper(onNewMessage: (msg: ChatMessage) => void): void {
-  const platform = getPageName();
-  if (!platform) {
+  const streamName = getStreamName();
+  if (!streamName) {
     console.warn("scrape-kick: unsupported platform");
     return;
   }
@@ -105,12 +105,11 @@ function getExistingMessages(chatContainer: Element): ChatMessage[] {
 
 /** Parse a Kick message element */
 function parseMessage(root: Element, id: string | null): ChatMessage | null {
-
   // Helper to parse message body
   const parseMessageBody = (messageBody: HTMLCollection, id: string | null): ChatMessage | null => {
     try {
       if (messageBody.length !== 4) {
-        console.log(`scrape-kick: body structure unexpected messageID: ${id}`);
+        console.log(`scrape-kick: likely not an actual message: ${id}`);
         return null;
       }
 
@@ -137,10 +136,10 @@ function parseMessage(root: Element, id: string | null): ChatMessage | null {
       }
 
       return {
+        streamName: streamName ? streamName : undefined,
         username: username ? username : undefined,
         text: text ? text : undefined,
         emoteId: emoteId ? emoteId : undefined,
-        isReply: false
       };
     }
     catch (error) {
@@ -149,8 +148,15 @@ function parseMessage(root: Element, id: string | null): ChatMessage | null {
     }
   } // End of parseMessageBody
 
+  const streamName = getStreamName();
+  if (!streamName) {
+    console.warn("scrape-kick: unsupported platform during parseMessage");
+    return null;
+  }
+
   // Main parsing logic
   const messageBody = (((root.children[0]).children[0]).children);
+
   // Reply message structure
   if (messageBody.length === 2) {
     try {

@@ -1,12 +1,12 @@
 /// <reference types="chrome" />
-import { isPageSupported } from "./url-listener";
+import { isValidPage } from "./url-listener";
 import { chatScraper } from "./scrape-kick";
 
-isPageSupported((supported) => {
-  if (supported) {
-    console.log("Page Supported");
-    // Start scraping comments when page is supported
+isValidPage((streamName) => {
+  if (streamName) {
+    console.log(`on a supported page: ${streamName}`);
 
+    // Start scraping comments when page is supported
     chatScraper((message) => {
       if (!message) { return; }
 
