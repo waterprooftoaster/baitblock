@@ -4,7 +4,7 @@ import { chatScraper } from "./scrape-kick";
 
 isValidPage((streamName) => {
   if (streamName) {
-    console.log(`on a supported page: ${streamName}`);
+    console.log(`on a kick stream: ${streamName}`);
 
     // Start scraping comments when page is supported
     chatScraper((message) => {
