@@ -1,4 +1,4 @@
-import { FeedToggle } from './components/FeedToggle';
+import { FeedToggle } from './components/feed-toggle';
 
 function App() {
   return (
