@@ -18,14 +18,21 @@ else:
 
 model.eval()
 
+# For calling something benign
 confidence_threshold = 0.9
+# Must exceed this to label as phishing
+phishing_absolute_threshold = 0.99
 
 
 def _build_prompt(message: str) -> str:
-    # Keep it strict so parsing is easier
+    # Keep the contract strict so parsing is easier
     return f"""You are a fraud detection classifier.
 
-Classify the following chat message as "phishing", "uncertain", or "benign". And give it a score between 0 and 1 indicating your confidence that it is phishing. 1 means definitely phishing, 0 means definitely benign.
+Classify the following chat message as "phishing", "uncertain", or "benign".
+Also give a score between 0 and 1 indicating your confidence that it is phishing:
+- 1 means definitely phishing
+- 0 means definitely benign
+
 Respond ONLY with a single JSON object of the form:
 {{"label": "phishing" or "uncertain" or "benign", "score": <float between 0 and 1>}}
 
@@ -33,6 +40,7 @@ Message: {json.dumps(message)}
 
 JSON:
 """
+
 
 def _call_model(prompt: str) -> str:
     inputs = tokenizer(prompt, return_tensors="pt")
@@ -70,7 +78,7 @@ def label(texts: list[str] | str):
     if isinstance(texts, str):
         texts = [texts]
 
-    results = []
+    results: list[dict] = []
 
     for text in texts:
         prompt = _build_prompt(text)
@@ -88,28 +96,49 @@ def label(texts: list[str] | str):
             except (TypeError, ValueError):
                 score = 0.0
 
-        # Normalize labels to your expected space
-        if label_value.lower() not in {"phishing", "not_phishing"}:
-            label_value = "uncertain"
-
-        phishing_score = score if label_value == "phishing" else 1.0 - score
-        benign_score = 1.0 - phishing_score
-
-        # Apply confidence threshold
-        if score < confidence_threshold:
-            final_label = "uncertain"
+        # Normalize labels to our expected space: phishing / benign / uncertain
+        raw_label = label_value.lower()
+        if raw_label in {"phishing", "fraud", "scam"}:
+            norm_label = "phishing"
+        elif raw_label in {
+            "benign",
+            "legit",
+            "legitimate",
+            "not_phishing",
+            "not phishing",
+            "ham",
+            "safe",
+        }:
+            norm_label = "benign"
+        elif raw_label in {
+            "uncertain",
+            "unsure",
+            "unknown",
+            "cannot_tell",
+            "cant_tell",
+            "can't_tell",
+        }:
+            norm_label = "uncertain"
         else:
-            # map to your previous style: "phishing" / "benign"
-            if label_value == "phishing":
-                final_label = "phishing"
-            elif label_value == "not_phishing":
-                final_label = "benign"
-            else:
-                final_label = "uncertain"
+            norm_label = "uncertain"
+
+        # Score is confidence it is phishing: 1 = definitely phishing, 0 = definitely benign
+        score = max(0.0, min(1.0, score))
+        phishing_score = score
+
+        # Default: uncertain
+        final_label = "uncertain"
+
+        # Only label phishing if ABSOLUTELY certain
+        if norm_label == "phishing" and phishing_score >= phishing_absolute_threshold:
+            final_label = "phishing"
+        # Label benign if confidently benign
+        elif norm_label == "benign" and (1.0 - phishing_score) >= confidence_threshold:
+            final_label = "benign"
 
         results.append(
             {
-                "label": final_label,
+                "label": final_label,  # "phishing" | "benign" | "uncertain"
                 "phishing_score": float(phishing_score),
             }
         )
