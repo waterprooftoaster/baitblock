@@ -33,8 +33,7 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
               username: message.username || null,
               text: message.text || null,
               emote_id: message.emoteId || null,
-              timestamp: new Date().toISOString(),
-            },
+            }
           ])
 
           // Print out the inserted line for debugging
