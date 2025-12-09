@@ -48,7 +48,12 @@ function observeKickChat(onNewMessage: (msg: ChatMessage) => void): void {
     const seenMessages = new Set<string>();
 
     // Get existing messages
-    getExistingMessages(chatContainer).forEach((msg) => { onNewMessage(msg); });
+    getExistingMessages(chatContainer).forEach((msg) => {
+      let id = msg[1];
+      if (id) { seenMessages.add(id); }
+      const text = msg[0];
+      onNewMessage(text);
+    });
 
     // Setup MutationObserver to detect new messages
     const observer = new MutationObserver((mutations) => {
@@ -86,9 +91,9 @@ function observeKickChat(onNewMessage: (msg: ChatMessage) => void): void {
 }
 
 /** Get all existing messages: */
-function getExistingMessages(chatContainer: Element): ChatMessage[] {
+function getExistingMessages(chatContainer: Element): [ChatMessage, string | null][] {
   if (!chatContainer) { return []; }
-  const messages: ChatMessage[] = [];
+  let messages: [ChatMessage, string | null][] = [];
 
   // Iterate through existing messages
   const messageElements = chatContainer.children[0].children;
@@ -96,7 +101,7 @@ function getExistingMessages(chatContainer: Element): ChatMessage[] {
     const id = element.getAttribute("data-index");
     const parsedMessage = parseMessage(element, id);
     if (parsedMessage) {
-      messages.push(parsedMessage);
+      messages.push([parsedMessage, id]);
     }
   }
 
