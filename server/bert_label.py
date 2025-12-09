@@ -7,7 +7,7 @@ model = AutoModelForSequenceClassification.from_pretrained(model_id)
 print(model.config.id2label)
 model.eval()
 
-confidence_threshold = 0.9  # tune this
+confidence_threshold = 0.99 # tune this
 
 def label(texts: list[str]):
     if isinstance(texts, str):
