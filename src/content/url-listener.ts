@@ -2,10 +2,19 @@
 
 /** Init function to check if page is supported */
 export function isValidPage(onName: (supported: string) => void) {
-  return urlListener(() => {
+  // Wrap logic so we can call it both initially and on URL changes
+  const emitIfKick = () => {
     const streamName = getStreamName();
-    if (streamName) { onName(streamName); }
-  });
+    if (streamName) {
+      onName(streamName);
+    }
+  };
+
+  // Run once immediately for the initial URL
+  emitIfKick();
+
+  // Then listen for SPA URL changes
+  return urlListener(emitIfKick);
 }
 
 /* Get stream name, called by scraping workflow as well*/
