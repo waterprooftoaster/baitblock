@@ -111,7 +111,6 @@ def label(texts: list[str] | str):
             {
                 "label": final_label,
                 "phishing_score": float(phishing_score),
-                "benign_score": float(benign_score),
             }
         )
 

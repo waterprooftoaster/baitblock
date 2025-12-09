@@ -42,7 +42,6 @@ def label(texts: list[str]):
             {
                 "label": label,
                 "phishing_score": phishing_score,
-                "benign_score" : benign_score
             }
         )
 

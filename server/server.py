@@ -27,7 +27,6 @@ def classify_endpoint(body: ClassifyRequest):
             "text": body.texts[i],
             "label": result["label"],
             "phishing_score": result["phishing_score"],
-            "benign_score": result["benign_score"],
         })
     supabase.table("processed_messages").insert(rows).execute()
 
