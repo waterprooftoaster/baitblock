@@ -11,12 +11,15 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
     chrome.storage.local.get(['feedEnabled'], async (result) => {
       const feedEnabled = result.feedEnabled !== false; // Default to true
 
+      // Feed button
       if (!feedEnabled) {
         sendResponse({ success: false, reason: 'Feed capture disabled' });
         return;
       }
 
-      if (message.text) {
+      // Only add to model if text is more than 2 words or has a very long word (link)
+      if ((message.text && message.text.trim().split(/\s+/).length > 2)
+        || message.text.split(/\s+/).some((w: string) => w.length > 10)) {
         pendingMessages.push([message.text, message.dataIndex]);
       }
 
