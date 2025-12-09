@@ -17,7 +17,7 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       }
 
       if (message.text) {
-        pendingMessages.push(message.text);
+        pendingMessages.push([message.text, message.dataIndex]);
       }
 
       // Insert the message into the Supabase table
@@ -56,7 +56,10 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
 setInterval(async () => {
   if (pendingMessages.length === 0) return;
 
-  const toSend = [...pendingMessages];
+  // Get the text to send to the model
+  // Copy and clear the pending messages to avoid race conditions, keep a copy for indexing
+  const toSend = pendingMessages.map((msg) => msg[0]);
+  const dataIndex = pendingMessages.map((msg) => msg[1]);
   pendingMessages.length = 0;
 
   try {
@@ -67,10 +70,26 @@ setInterval(async () => {
     });
 
     const results = await res.json();
-    console.log("classifier results:", results);
 
-  } catch (err) {
-    console.warn("classifier failed", err);
+    // Find all index labeled as phishing
+    const phishingIndexes: string[] = [];
+    for (let i = 0; i < results.length; i++) {
+      if (results[i].label === "phishing") {
+        phishingIndexes.push(dataIndex[i]);
+      }
+    }
+
+    // Send it back to content script for injection
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]?.id) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: "indexesLabeledPhishing",
+          payload: phishingIndexes
+        });
+      }
+    });
+
+  } catch (error) {
+    console.warn(`classifier failed: ${error}`);
   }
-
 }, 1000);

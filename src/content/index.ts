@@ -33,3 +33,30 @@ isValidPage((streamName) => {
     console.log("Page Not Supported");
   }
 })
+
+// Listen for labeling results from background script
+chrome.runtime.onMessage.addListener((request, _sender, _response) => {
+  if (request.type === "labelingResults") {
+    const phishingIndexes = request.payload;
+    const chatContainer = document.getElementById("chatroom-messages");
+
+    // Match the message by dataIndex to label correctly
+    phishingIndexes.forEach(({ dataIndex }: any) => {
+      // Find container
+      if (!chatContainer) {
+        console.warn(`Could not find chat container in background/index.ts`)
+        return;
+      }
+
+      // Find the message element
+      const element = chatContainer.querySelector(`[data-index="${dataIndex}"]`);
+      if (!element) {
+        console.warn(`Could not find message ${dataIndex} in background/index.ts`);
+        return;
+      }
+
+      // Outline the message div in red if phishing
+      (element as HTMLElement).style.outline = "2px solid red";
+    });
+  }
+});

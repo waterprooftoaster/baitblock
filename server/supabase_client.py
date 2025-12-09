@@ -15,5 +15,5 @@ def get_client() -> Client:
       - SUPABASE_SERVICE_ROLE_KEY
     """
     url = os.environ["SUPABASE_URL"]
-    key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+    key = os.environ["SUPABASE_ANON_KEY"]
     return create_client(url, key)
