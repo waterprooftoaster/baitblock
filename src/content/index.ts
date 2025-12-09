@@ -41,7 +41,7 @@ chrome.runtime.onMessage.addListener((request, _sender, _response) => {
     const chatContainer = document.getElementById("chatroom-messages");
 
     // Match the message by dataIndex to label correctly
-    phishingIndexes.forEach(({ dataIndex }: any) => {
+    phishingIndexes.forEach((dataIndex: string) => {
       // Find container
       if (!chatContainer) {
         console.warn(`Could not find chat container in background/index.ts`)
