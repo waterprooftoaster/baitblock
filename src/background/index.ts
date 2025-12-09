@@ -66,7 +66,7 @@ setInterval(async () => {
     const res = await fetch("http://127.0.0.1:8000/label_messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toSend })
+      body: JSON.stringify({ texts: toSend })
     });
 
     const results = await res.json();
