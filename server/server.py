@@ -8,7 +8,7 @@ app = FastAPI()
 class ClassifyRequest(BaseModel):
     texts: List[str]
 
-@app.post("/classify")
+@app.post("/label_messages")
 def classify_endpoint(body: ClassifyRequest):
     """
     Accepts: {"texts": ["msg1", "msg2", ...]}
