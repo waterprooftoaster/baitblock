@@ -56,7 +56,7 @@ chrome.runtime.onMessage.addListener((request, _sender, _response) => {
       }
 
       // Outline the message div in red if phishing
-      (element as HTMLElement).style.outline = "2px solid red";
+      (element.children[0] as HTMLElement).style.outline = "2px solid red";
     });
   }
 });

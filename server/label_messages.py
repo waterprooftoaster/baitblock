@@ -4,9 +4,10 @@ import torch
 model_id = "ealvaradob/bert-finetuned-phishing"
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 model = AutoModelForSequenceClassification.from_pretrained(model_id)
+print(model.config.id2label)
 model.eval()
 
-confidence_threshold = 0.8  # tune this
+confidence_threshold = 0.9  # tune this
 
 def label(texts: list[str]):
     if isinstance(texts, str):
