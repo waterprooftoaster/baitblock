@@ -36,7 +36,7 @@ isValidPage((streamName) => {
 
 // Listen for labeling results from background script
 chrome.runtime.onMessage.addListener((request, _sender, _response) => {
-  if (request.type === "labelingResults") {
+  if (request.type === "phishingIndexes") {
     const phishingIndexes = request.payload;
     const chatContainer = document.getElementById("chatroom-messages");
 
