@@ -27,3 +27,5 @@ dist-ssr
 *.bbl
 *.blg
 *.env
+*.venv
+*server/__pycache__
