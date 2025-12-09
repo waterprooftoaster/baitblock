@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 from fastapi import FastAPI
 from pydantic import BaseModel
 from bert_label import label
@@ -7,7 +7,7 @@ from supabase_client import get_client
 app = FastAPI()
 
 class ClassifyRequest(BaseModel):
-    texts: List[str]
+    messages: List[Tuple[str, str]]
 
 @app.post("/label_messages")
 def classify_endpoint(body: ClassifyRequest):
@@ -15,7 +15,9 @@ def classify_endpoint(body: ClassifyRequest):
     Accepts: {"texts": ["msg1", "msg2", ...]}
     Returns: list of label dicts from label_messages.label()
     """
-    results = label(body.texts)
+    texts = [msg[1] for msg in body.messages]
+    stream_names = [msg[0] for msg in body.messages]
+    results = label(texts)
     
     # Insert results into Supabase
     supabase = get_client()
@@ -24,7 +26,8 @@ def classify_endpoint(body: ClassifyRequest):
     rows = []
     for i, result in enumerate(results):
         rows.append({
-            "text": body.texts[i],
+            "stream_name": stream_names[i],
+            "text": texts[i],
             "label": result["label"],
             "phishing_score": result["phishing_score"],
         })

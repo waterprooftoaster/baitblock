@@ -1,7 +1,7 @@
 /// <reference types="chrome" />
 import { supabaseClient } from "../supabase-client";
 
-const pendingMessages: [string, string][] = [];
+const pendingMessages: [string, string, string][] = [];
 
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request.type === "newChatMessage") {
@@ -20,7 +20,7 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       // Only add to model if text is more than 2 words or has a very long word (link)
       if ((message.text && message.text.trim().split(/\s+/).length > 2)
         || message.text.split(/\s+/).some((w: string) => w.length > 10)) {
-        pendingMessages.push([message.text, message.dataIndex]);
+        pendingMessages.push([message.streamName, message.text, message.dataIndex]);
       }
 
       // Insert the message into the Supabase table
@@ -61,15 +61,15 @@ setInterval(async () => {
 
   // Get the text to send to the model
   // Copy and clear the pending messages to avoid race conditions, keep a copy for indexing
-  const toSend = pendingMessages.map((msg) => msg[0]);
-  const dataIndex = pendingMessages.map((msg) => msg[1]);
+  const toSend = pendingMessages.map((msg) => [msg[0], msg[1]]);
+  const dataIndex = pendingMessages.map((msg) => msg[2]);
   pendingMessages.length = 0;
 
   try {
     const res = await fetch("http://127.0.0.1:8000/label_messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ texts: toSend })
+      body: JSON.stringify({ messages: toSend })
     });
 
     const results = await res.json();
