@@ -3,6 +3,7 @@ import { getStreamName } from "./url-listener";
 
 /** Represents a single chat message */
 interface ChatMessage {
+  dataIndex?: string;
   streamName?: string;
   username?: string;
   text?: string;
@@ -49,8 +50,8 @@ function observeKickChat(onNewMessage: (msg: ChatMessage) => void): void {
 
     // Get existing messages
     getExistingMessages(chatContainer).forEach((msg) => {
-      let id = msg[1];
-      if (id) { seenMessages.add(id); }
+      let dataIndex = msg[1];
+      if (dataIndex) { seenMessages.add(dataIndex); }
       const text = msg[0];
       onNewMessage(text);
     });
@@ -70,12 +71,12 @@ function observeKickChat(onNewMessage: (msg: ChatMessage) => void): void {
             }
 
             // Save seen ids to avoid dupes
-            const id = element.getAttribute("data-index");
-            if (!id || seenMessages.has(id)) { return; }
-            seenMessages.add(id);
+            const dataIndex = element.getAttribute("data-index");
+            if (!dataIndex || seenMessages.has(dataIndex)) { return; }
+            seenMessages.add(dataIndex);
 
             // Callback with parsed message
-            const parsedMessage = parseMessage(element, id);
+            const parsedMessage = parseMessage(element, dataIndex);
             if (parsedMessage) { onNewMessage(parsedMessage); }
           });
         }
@@ -98,10 +99,10 @@ function getExistingMessages(chatContainer: Element): [ChatMessage, string | nul
   // Iterate through existing messages
   const messageElements = chatContainer.children[0].children;
   for (const element of messageElements) {
-    const id = element.getAttribute("data-index");
-    const parsedMessage = parseMessage(element, id);
+    const dataIndex = element.getAttribute("data-index");
+    const parsedMessage = parseMessage(element, dataIndex);
     if (parsedMessage) {
-      messages.push([parsedMessage, id]);
+      messages.push([parsedMessage, dataIndex]);
     }
   }
 
@@ -109,12 +110,12 @@ function getExistingMessages(chatContainer: Element): [ChatMessage, string | nul
 }
 
 /** Parse a Kick message element */
-function parseMessage(root: Element, id: string | null): ChatMessage | null {
+function parseMessage(root: Element, dataIndex: string | null): ChatMessage | null {
   // Helper to parse message body
-  const parseMessageBody = (messageBody: HTMLCollection, id: string | null): ChatMessage | null => {
+  const parseMessageBody = (messageBody: HTMLCollection, dataIndex: string | null): ChatMessage | null => {
     try {
       if (messageBody.length !== 4) {
-        console.log(`scrape-kick: likely not an actual message: ${id}`);
+        console.log(`scrape-kick: likely not an actual message: ${dataIndex}`);
         return null;
       }
 
@@ -141,6 +142,7 @@ function parseMessage(root: Element, id: string | null): ChatMessage | null {
       }
 
       return {
+        dataIndex: dataIndex ? dataIndex : undefined,
         streamName: streamName ? streamName : undefined,
         username: username ? username : undefined,
         text: text ? text : undefined,
@@ -166,10 +168,10 @@ function parseMessage(root: Element, id: string | null): ChatMessage | null {
   if (messageBody.length === 2) {
     try {
       const replyMessageBody = messageBody[1].children;
-      return parseMessageBody(replyMessageBody, id);
+      return parseMessageBody(replyMessageBody, dataIndex);
     }
     catch (error) {
-      console.warn(`scrape-kick: error parsing reply messageId: ${id}, error: ${error}`);
+      console.warn(`scrape-kick: error parsing reply message. dataIndex ${dataIndex}, error: ${error}`);
       return null;
     }
   }
@@ -177,10 +179,10 @@ function parseMessage(root: Element, id: string | null): ChatMessage | null {
   // Normal Message Structure
   else {
     try {
-      return parseMessageBody(messageBody, id);
+      return parseMessageBody(messageBody, dataIndex);
     }
     catch (error) {
-      console.warn(`scrape-kick: error parsing normal messageId: ${id}, error: ${error}`);
+      console.warn(`scrape-kick: error parsing normal message. dataIndex: ${dataIndex}, error: ${error}`);
       return null;
     }
   }

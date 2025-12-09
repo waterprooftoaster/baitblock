@@ -1,6 +1,8 @@
 /// <reference types="chrome" />
 import { supabaseClient } from "../supabase-client";
 
+const pendingMessages: [string, string][] = [];
+
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request.type === "newChatMessage") {
     const message = request.payload;
@@ -12,6 +14,10 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       if (!feedEnabled) {
         sendResponse({ success: false, reason: 'Feed capture disabled' });
         return;
+      }
+
+      if (message.text) {
+        pendingMessages.push(message.text);
       }
 
       // Insert the message into the Supabase table
@@ -45,3 +51,26 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
     return true;
   }
 });
+
+// Send to model every second
+setInterval(async () => {
+  if (pendingMessages.length === 0) return;
+
+  const toSend = [...pendingMessages];
+  pendingMessages.length = 0;
+
+  try {
+    const res = await fetch("http://127.0.0.1:8000/label_messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toSend })
+    });
+
+    const results = await res.json();
+    console.log("classifier results:", results);
+
+  } catch (err) {
+    console.warn("classifier failed", err);
+  }
+
+}, 1000);
