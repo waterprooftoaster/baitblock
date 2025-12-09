@@ -1,6 +1,7 @@
 # analysis/analyze.py
 import pandas as pd
 from collections import Counter
+from supabase_client import get_client
 
 CSV_PATH = "kick_messages.csv"
 
@@ -77,9 +78,10 @@ def add_metadata(df: pd.DataFrame) -> pd.DataFrame:
 def report_unknown_streamers(df: pd.DataFrame) -> None:
     unique_usernames = df["username"].unique()
     saveable = []
+    supabase = get_client()
     for username in unique_usernames:
       if (not username in STREAMER_CATEGORY ) and (not username in STREAMER_SIZE):
-        print(username)
+        supabase.table("kick_messages").delete().eq("username", username).execute()
       if (not username in STREAMER_CATEGORY ) ^ (not username in STREAMER_SIZE):
         saveable.append(username)
     
