@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import FastAPI
 from pydantic import BaseModel
-from label_messages import label
+from server.bert_label import label
 from supabase_client import get_client
 
 app = FastAPI()
