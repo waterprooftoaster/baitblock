@@ -12,15 +12,14 @@ The project consists of three main components:
 
 ### 1. The Extension
 
-   ### 1. **Frontend (React + Vite)**
-   - **Location**: `src/`
+   ####  **Frontend (React + Vite)** (`src/`)
    - **Purpose**: Provides the extension popup UI
    - **Key Files**:
    - `App.tsx`: Main application component
    - `components/feed-toggle.tsx`: Toggle switch to enable/disable chat monitoring
    - `supabase-client.ts`: Initializes Supabase client for data persistence
 
-   ### 2. **Content Script** (`src/content/`)
+   #### **Content Script** (`src/content/`)
    Runs on the webpage to monitor chat activity:
    - **`scrape-kick.ts`**: Scrapes chat messages from Kick's DOM using MutationObserver
    - Monitors the chat container (`#chatroom-messages`)
@@ -32,7 +31,7 @@ The project consists of three main components:
    - Validates that the user is on a valid Kick stream page
    - Returns the stream name for context
 
-   ### 3. **Background Service Worker** (`src/background/`)
+   #### **Background Service Worker** (`src/background/`)
    Orchestrates message flow and AI classification:
    - **`index.ts`**: 
    - Receives chat messages from the content script
