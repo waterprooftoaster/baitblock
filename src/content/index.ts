@@ -2,31 +2,32 @@
 import { isValidPage } from "./url-listener";
 import { chatScraper } from "./scrape-kick";
 
+let scraperActive = false;
+
+function startScraper() {
+  if (scraperActive) return;
+  scraperActive = true;
+
+  chatScraper((message) => {
+    if (!message) { return; }
+
+    // Send to bg script
+    chrome.runtime.sendMessage({
+      type: "newChatMessage",
+      payload: message
+    })
+  });
+}
+
 isValidPage((streamName) => {
   if (streamName) {
     console.log(`on a kick stream: ${streamName}`);
 
-    // Start scraping comments when page is supported
-    chatScraper((message) => {
-      if (!message) { return; }
-
-      // Send to bg script
-      chrome.runtime.sendMessage({
-        type: "newChatMessage",
-        payload: message
-      })
-
-      // Print to console
-      // let messageText = "";
-      // const username = message.username ? message.username : "Unknown";
-      // if (!message) { return; }
-      // if (message.text) {
-      //   messageText += message.text;
-      // }
-      // if (message.emoteId) {
-      //   messageText += ` [emoteId:${message.emoteId}]`;
-      // }
-      // console.log(`${username}: ${messageText}`);
+    // Check if feed is enabled in storage before starting
+    chrome.storage.local.get(['feedEnabled'], (result) => {
+      if (result.feedEnabled !== false) {
+        startScraper();
+      }
     });
   }
   else {
@@ -34,8 +35,20 @@ isValidPage((streamName) => {
   }
 })
 
-// Listen for labeling results from background script
+// Listener for toggle and phishing indexes
 chrome.runtime.onMessage.addListener((request, _sender, _response) => {
+  // For toggle to work
+  if (request.type === "feedToggle") {
+    if (request.enabled && !scraperActive) {
+      console.log("Feed toggled ON, starting scraper");
+      startScraper();
+    } else if (!request.enabled) {
+      console.log("Feed toggled OFF");
+      scraperActive = false;
+    }
+  }
+
+  // For ui injection to work
   if (request.type === "phishingIndexes") {
     const phishingIndexes = request.payload;
     const chatContainer = document.getElementById("chatroom-messages");
