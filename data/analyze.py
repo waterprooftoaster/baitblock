@@ -24,6 +24,13 @@ STREAMER_CATEGORY = {
   "degendaddy" : "casino",
   "notsosane187" : "just_chatting",
   "solpump247" : "trading",
+   "geivan" : "just_chatting",
+   "amouranth" : "just_chatting",
+   "timislive" : "just_chatting",
+   "notrichbro" : "casino",
+   "roshtein" : "casino",
+   "togi" : "casino",
+   "balkanator" : "casino", 
 }
 
 # Map usernames to stream sizes
@@ -46,7 +53,13 @@ STREAMER_SIZE = {
     "degendaddy" : 1200,
     "solpump247" : 327,
     "notsosane187" : 817,
-    
+    "geivan" : 25,
+    "amouranth" : 267100,
+    "timislive" : 2800,
+    "notrichbro" : 1,
+    "roshtein" : 348900,
+    "togi" : 156200,
+    "balkanator" : 1200,
 }
 
 def load_data(path: str) -> pd.DataFrame:
@@ -77,17 +90,26 @@ def add_metadata(df: pd.DataFrame) -> pd.DataFrame:
 
 def report_unknown_streamers(df: pd.DataFrame) -> None:
     unique_usernames = df["username"].unique()
-    saveable = []
-    supabase = get_client()
+    full_missing = []
+    half_missing = []
     for username in unique_usernames:
       if (not username in STREAMER_CATEGORY ) and (not username in STREAMER_SIZE):
-        supabase.table("kick_messages").delete().eq("username", username).execute()
+        full_missing.append(username)
+      
       if (not username in STREAMER_CATEGORY ) ^ (not username in STREAMER_SIZE):
-        saveable.append(username)
-    
-    print('SAVEABLE STREAMERS????')
-    for curr in saveable:
+        half_missing.append(username)
+        
+    print ("=====================================")
+    print ("STREAMERS WITH ALL THEIR INFO MISSING")
+    print ("=====================================")
+    for curr in full_missing:
        print(curr)
+
+    print ("======================================")
+    print ("STREAMERS WITH HALF THEIR INFO MISSING")
+    print ("======================================")
+    for curr in half_missing:
+       print(curr) 
 
 def analyze_by_category(df: pd.DataFrame) -> None:
     counts = Counter(df["category"])

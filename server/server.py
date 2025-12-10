@@ -1,6 +1,7 @@
 from typing import List, Tuple
 from fastapi import FastAPI
 from pydantic import BaseModel
+from supabase_client import get_client
 from bert_label import label
 
 app = FastAPI()
