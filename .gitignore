@@ -28,4 +28,5 @@ dist-ssr
 *.blg
 *.env
 *.venv
-*server/__pycache__
+*.csv
+*__pycache__
