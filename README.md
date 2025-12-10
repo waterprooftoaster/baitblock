@@ -11,34 +11,33 @@ BaitBlock is a browser extension designed to protect streamers and viewers from 
 The project consists of three main components:
 
 ### 1. The Extension
+      ####  **Frontend (React + Vite)** (`src/`)
+      - **Purpose**: Provides the extension popup UI
+      - **Key Files**:
+      - `App.tsx`: Main application component
+      - `components/feed-toggle.tsx`: Toggle switch to enable/disable chat monitoring
+      - `supabase-client.ts`: Initializes Supabase client for data persistence
 
-   ####  **Frontend (React + Vite)** (`src/`)
-   - **Purpose**: Provides the extension popup UI
-   - **Key Files**:
-   - `App.tsx`: Main application component
-   - `components/feed-toggle.tsx`: Toggle switch to enable/disable chat monitoring
-   - `supabase-client.ts`: Initializes Supabase client for data persistence
+      #### **Content Script** (`src/content/`)
+      Runs on the webpage to monitor chat activity:
+      - **`scrape-kick.ts`**: Scrapes chat messages from Kick's DOM using MutationObserver
+      - Monitors the chat container (`#chatroom-messages`)
+      - Extracts message metadata (username, text, emotes, stream name)
+      - Filters out messages shorter than 2 words or with no long words (potential links)
 
-   #### **Content Script** (`src/content/`)
-   Runs on the webpage to monitor chat activity:
-   - **`scrape-kick.ts`**: Scrapes chat messages from Kick's DOM using MutationObserver
-   - Monitors the chat container (`#chatroom-messages`)
-   - Extracts message metadata (username, text, emotes, stream name)
-   - Filters out messages shorter than 2 words or with no long words (potential links)
-   
-   - **`url-listener.ts`**: Detects when user is on a Kick stream
-   - Polls for URL changes to handle single-page navigation
-   - Validates that the user is on a valid Kick stream page
-   - Returns the stream name for context
+      - **`url-listener.ts`**: Detects when user is on a Kick stream
+      - Polls for URL changes to handle single-page navigation
+      - Validates that the user is on a valid Kick stream page
+      - Returns the stream name for context
 
-   #### **Background Service Worker** (`src/background/`)
-   Orchestrates message flow and AI classification:
-   - **`index.ts`**: 
-   - Receives chat messages from the content script
-   - Forwards messages to the backend ML server for classification
-   - Inserts all messages into Supabase database for archival
-   - Receives phishing predictions and injects red outline styling into detected phishing messages
-   - Manages the feed toggle state via Chrome storage
+      #### **Background Service Worker** (`src/background/`)
+      Orchestrates message flow and AI classification:
+      - **`index.ts`**: 
+      - Receives chat messages from the content script
+      - Forwards messages to the backend ML server for classification
+      - Inserts all messages into Supabase database for archival
+      - Receives phishing predictions and injects red outline styling into detected phishing messages
+      - Manages the feed toggle state via Chrome storage
 
 ### 2. **Backend Server** (`server/`)
 Python FastAPI server that performs ML classification:
