@@ -36,17 +36,21 @@ export function FeedToggle() {
   };
 
   return (
-    <div className="flex items-center justify-between gap-4 p-6 min-w-max">
-      <label htmlFor="feed-toggle" className="text-base font-medium">
+    <div className="flex items-center justify-between gap-8 p-6 min-w-max">
+      <label htmlFor="feed-toggle" className="text-2xl font-semibold text-gray-800">
         Capture Feed
       </label>
-      <input
+      <button
         id="feed-toggle"
-        type="checkbox"
-        checked={isEnabled}
-        onChange={handleToggle}
-        className="w-6 h-6 cursor-pointer"
-      />
+        onClick={() => handleToggle({ target: { checked: !isEnabled } } as any)}
+        className={`relative inline-flex h-10 w-20 items-center rounded-full transition-colors duration-300 ${isEnabled ? 'bg-blue-500' : 'bg-gray-300'
+          }`}
+      >
+        <span
+          className={`inline-block h-8 w-8 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${isEnabled ? 'translate-x-10' : 'translate-x-1'
+            }`}
+        />
+      </button>
     </div>
   );
 }
