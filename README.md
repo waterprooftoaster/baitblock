@@ -1,49 +1,44 @@
 # BaitBlock
 
-A Chrome extension that detects and highlights phishing messages in live chat streams on Kick.com using AI-powered classification.
+A Chrome extension that detects and highlights phishing messages in live chat streams on Kick.com using AI classification. 
 
 ## Overview
 
-BaitBlock is a browser extension designed to protect streamers and viewers from malicious content by automatically detecting phishing attempts in Kick chat. The extension uses a fine-tuned BERT model to classify messages in real-time and visually highlights suspicious phishing content.
+This is a project developed for the class "Trust and Safety" with Professor Rosanna Bellini at New York University. It was developed both for Kick user protection and to study phishing vectors on Kick. `src/` contains the scripts for scraping a stream's chat room and sending it to Supabase. If you are not interested in the AI labeling feature and simply want to collect Kick messages in real-time, comment out the code that sends and recieves data from the backend in `src/background/index.ts` and the UI injection code in `src/content/index.ts`. Then simply follow the set up instructions below.
+
+[![BaitBlock Demo](https://img.youtube.com/vi/cQIUO8_igs4/hqdefault.jpg)](https://www.youtube.com/watch?v=cQIUO8_igs4)
 
 ## Architecture
 
 The project consists of three main components:
 
-### 1. The Extension
-   - **Frontend (React + Vite)** (`src/`)
+### 1. The Extension (`/src/)
+   - **Frontend (React + Vite)**
       - `App.tsx`: Main application component
       - `components/feed-toggle.tsx`: Toggle switch to enable/disable chat monitoring
       - `supabase-client.ts`: Initializes Supabase client for data persistence
 
-   - **Content Script** (`src/content/`)
+   - **Content Script (`src/content/`)**
       Runs on the webpage to monitor chat activity:
-      - `scrape-kick.ts`**: Scrapes chat messages from Kick's DOM using MutationObserver
-      - Extracts message metadata (username, text, emotes, stream name)
+      - **`scrape-kick.ts`**: Scrapes chat messages from Kick's DOM using MutationObserver. Extracts message metadata (username, text, emotes, stream name)
+      - **`url-listener.ts`**: Detects when user is on a Kick stream
 
-   - **`url-listener.ts`**: Detects when user is on a Kick stream
-
-   - **Background Service Worker** (`src/background/`)
+   - **Background Service Worker (`src/background/`)**
       Orchestrates message flow and AI classification:
-      - `index.ts`: 
-      - Receives chat messages from the content script
-      - Forwards messages to the backend ML server for classification
-      - Inserts all messages into Supabase database for archival
-      - Receives phishing predictions and injects red outline styling into detected phishing messages
+      - **`index.ts`**: Interacts with the backend server and Supabase.
 
-### 2. **Backend Server** (`server/`)
-Python FastAPI server that performs ML classification:
-- **`server.py`**: 
+### 2. **Backend Server (`server/`) **
+- **Local Server (Python FastAPI) `server.py`**: 
   - Endpoint: `POST /label_messages`
   - Accepts batches of messages
   - Classifies messages using BERT model
   - Inserts classified results into Supabase
   
-- **`bert_label.py`**: 
+- **Classification Model (PyTorch + HugginFace) `bert_label.py`**: 
   - The classification model used is: [ealvaradob/bert-finetuned-phishing](https://huggingface.co/ealvaradob/bert-finetuned-phishing)
   - Outputs phishing probability scores and classify the messages as phishing, uncertain, or benign.
 
-### 3. **Data Management** (`data/`)
+### 3. **Data Management (`data/`) **
 - **`analyze.py`**: Analysis data from supabase for the final report.
 
 ## Workflow
@@ -110,7 +105,7 @@ Python FastAPI server that performs ML classification:
    npm install
    ```
 
-2. *** Optional: *** Create a `.env` file with Supabase credentials for data collection. This is not required for the extension to work. Don't forget to comment out the Supabase code.
+2. *** Optional: ***  Create a table in Supabase and create a RLS policy that allows for anon inserts. Copy `.env.example` into your `.env` file and enter your Supabase credentials for data collection. This is not required for the extension to work. Don't forget to comment out the Supabase code.
    ```
    VITE_SUPABASE_URL=your_supabase_url
    VITE_SUPABASE_ANON_KEY=your_anon_key
@@ -151,39 +146,6 @@ Python FastAPI server that performs ML classification:
    ```bash
    python -m uvicorn server:app --reload --port 8000
    ```
-
-## File Structure
-
-```
-baitblock/
-├── src/
-│   ├── App.tsx                 # Main React component
-│   ├── main.tsx                # React entry point
-│   ├── supabase-client.ts      # Supabase configuration
-│   ├── index.css               # Styling
-│   ├── background/
-│   │   └── index.ts            # Service worker (message orchestration)
-│   ├── content/
-│   │   ├── index.ts            # Content script entry (UI injection)
-│   │   ├── scrape-kick.ts      # Chat message scraper
-│   │   └── url-listener.ts     # Stream detection
-│   └── components/
-│       └── feed-toggle.tsx     # Toggle UI component
-├── server/
-│   ├── server.py               # FastAPI endpoint
-│   ├── bert_label.py           # ML classification
-│   ├── supabase_client.py      # DB client
-│   └── mistral7b_label.py      # Alternative model (unused)
-├── data/
-│   ├── analyze.py              # Analysis utilities
-│   ├── kick_messages.csv       # Chat archive
-│   └── supabase_client.py      # Shared DB client
-├── public/
-│   └── manifest.json           # Chrome extension manifest
-├── vite.config.ts              # Vite configuration
-├── tsconfig.json               # TypeScript configuration
-└── package.json                # Dependencies
-```
 
 ## Known Limitations
 
