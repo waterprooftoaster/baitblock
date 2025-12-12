@@ -150,6 +150,7 @@ The project consists of three main components:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Known Limitations
+## Known Limitations and Future Steps
 
 - The model used has a high false positive rate since it was trained on traditional phishing vectors, not livestream chat messages. I mannually required a confidence threshold of 0.999997 in `server/bert_label.py` for the model to label a message.
+- Currently collected ~55k messages from a variaty of channels and time frames. Working on collecting more data and annotation to train my own classification model from BERT.
