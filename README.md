@@ -9,7 +9,7 @@ A Chrome extension that detects and highlights phishing messages in live chat st
 - If you are not interested in the AI labeling feature and simply want to collect Kick messages in real-time, comment out the code that sends and recieves data from the backend in `src/background/index.ts` and the UI injection code in `src/content/index.ts`. Then simply follow the set up instructions below.
 
 - Demo:
-[![BaitBlock Demo](https://img.youtube.com/vi/cQIUO8_igs4/hqdefault.jpg)](https://www.youtube.com/watch?v=cQIUO8_igs4)
+      [![BaitBlock Demo](https://img.youtube.com/vi/cQIUO8_igs4/hqdefault.jpg)](https://www.youtube.com/watch?v=cQIUO8_igs4)
 
 ## Architecture
 
