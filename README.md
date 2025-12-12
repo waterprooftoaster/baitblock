@@ -6,9 +6,10 @@ A Chrome extension that detects and highlights phishing messages in live chat st
 
 - This is a project developed for the class "Trust and Safety" with Professor Rosanna Bellini at New York University. It was developed both for Kick user protection and to study phishing vectors on Kick. 
 
-- `src/` contains the scripts for scraping a stream's chat room and sending it to Supabase. If you are not interested in the AI labeling feature and simply want to collect Kick messages in real-time, comment out the code that sends and recieves data from the backend in `src/background/index.ts` and the UI injection code in `src/content/index.ts`. Then simply follow the set up instructions below.
+- If you are not interested in the AI labeling feature and simply want to collect Kick messages in real-time, comment out the code that sends and recieves data from the backend in `src/background/index.ts` and the UI injection code in `src/content/index.ts`. Then simply follow the set up instructions below.
 
-- Demo: [![BaitBlock Demo](https://img.youtube.com/vi/cQIUO8_igs4/hqdefault.jpg)](https://www.youtube.com/watch?v=cQIUO8_igs4)
+- Demo:
+[![BaitBlock Demo](https://img.youtube.com/vi/cQIUO8_igs4/hqdefault.jpg)](https://www.youtube.com/watch?v=cQIUO8_igs4)
 
 ## Architecture
 
