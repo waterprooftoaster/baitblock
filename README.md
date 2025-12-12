@@ -12,32 +12,24 @@ The project consists of three main components:
 
 ### 1. The Extension
    - **Frontend (React + Vite)** (`src/`)
-      - **Purpose**: Provides the extension popup UI
-      - **Key Files**:
       - `App.tsx`: Main application component
       - `components/feed-toggle.tsx`: Toggle switch to enable/disable chat monitoring
       - `supabase-client.ts`: Initializes Supabase client for data persistence
 
    - **Content Script** (`src/content/`)
       Runs on the webpage to monitor chat activity:
-      - **`scrape-kick.ts`**: Scrapes chat messages from Kick's DOM using MutationObserver
-      - Monitors the chat container (`#chatroom-messages`)
+      - `scrape-kick.ts`**: Scrapes chat messages from Kick's DOM using MutationObserver
       - Extracts message metadata (username, text, emotes, stream name)
-      - Filters out messages shorter than 2 words or with no long words (potential links)
 
    - **`url-listener.ts`**: Detects when user is on a Kick stream
-      - Polls for URL changes to handle single-page navigation
-      - Validates that the user is on a valid Kick stream page
-      - Returns the stream name for context
 
    - **Background Service Worker** (`src/background/`)
       Orchestrates message flow and AI classification:
-      - **`index.ts`**: 
+      - `index.ts`: 
       - Receives chat messages from the content script
       - Forwards messages to the backend ML server for classification
       - Inserts all messages into Supabase database for archival
       - Receives phishing predictions and injects red outline styling into detected phishing messages
-      - Manages the feed toggle state via Chrome storage
 
 ### 2. **Backend Server** (`server/`)
 Python FastAPI server that performs ML classification:
@@ -48,14 +40,11 @@ Python FastAPI server that performs ML classification:
   - Inserts classified results into Supabase
   
 - **`bert_label.py`**: 
-  - Uses fine-tuned BERT model (`ealvaradob/bert-finetuned-phishing`)
-  - Outputs phishing probability scores
-  - Configurable confidence threshold for uncertain classifications
+  - The classification model used is: [ealvaradob/bert-finetuned-phishing](https://huggingface.co/ealvaradob/bert-finetuned-phishing)
+  - Outputs phishing probability scores and classify the messages as phishing, uncertain, or benign.
 
 ### 3. **Data Management** (`data/`)
-- **`analyze.py`**: Analysis utilities for processed messages
-- **`kick_messages.csv`**: Raw chat data archive
-- **`supabase_client.py`**: Shared Supabase client for Python scripts
+- **`analyze.py`**: Analysis data from supabase for the final report.
 
 ## Workflow
 
@@ -121,7 +110,7 @@ Python FastAPI server that performs ML classification:
    npm install
    ```
 
-2. Create a `.env.local` file with Supabase credentials:
+2. *** Optional: *** Create a `.env` file with Supabase credentials for data collection. This is not required for the extension to work. Don't forget to comment out the Supabase code.
    ```
    VITE_SUPABASE_URL=your_supabase_url
    VITE_SUPABASE_ANON_KEY=your_anon_key
@@ -152,7 +141,7 @@ Python FastAPI server that performs ML classification:
    pip install -r requirements.txt
    ```
 
-2. Create `.env` file in `server/` with Supabase credentials:
+2. *** Optional: *** Create `.env` file in `server/` with Supabase credentials:
    ```
    SUPABASE_URL=your_supabase_url
    SUPABASE_KEY=your_key
@@ -162,66 +151,6 @@ Python FastAPI server that performs ML classification:
    ```bash
    python -m uvicorn server:app --reload --port 8000
    ```
-
-## Database Schema
-
-### `kick_messages` table
-Raw chat messages collected from streams:
-```sql
-- stream_name (text)
-- username (text)
-- text (text)
-- emote_id (text)
-- created_at (timestamp)
-```
-
-### `processed_messages` table
-Classified messages with ML predictions:
-```sql
-- stream_name (text)
-- text (text)
-- label (text): 'phishing', 'benign', or 'uncertain'
-- phishing_score (float): 0.0-1.0
-- created_at (timestamp)
-```
-
-## Development
-
-### Available Scripts
-
-- `npm run dev` - Start Vite dev server
-- `npm run build` - Build for production
-- `npm run lint` - Run ESLint
-- `npm run preview` - Preview production build
-
-### Key Technologies
-
-- **Frontend**: React 19, TypeScript, Tailwind CSS, Vite
-- **Extension**: Chrome Manifest V3
-- **Backend**: Python, FastAPI, PyTorch, Transformers
-- **Database**: Supabase (PostgreSQL)
-- **ML Model**: BERT fine-tuned for phishing detection
-
-## Configuration
-
-### ML Model Confidence Threshold
-Edit `server/bert_label.py`:
-```python
-confidence_threshold = 0.99997  # Adjust for sensitivity
-```
-
-### Message Filtering (Content Script)
-Edit `src/content/scrape-kick.ts`:
-```typescript
-// Only messages with >2 words or containing long words (links)
-if ((message.text.length > 2) || message.text.split(/\s+/).some(w => w.length > 10))
-```
-
-### Backend Polling Interval
-Edit `src/background/index.ts`:
-```typescript
-setInterval(async () => { ... }, 1000)  // 1 second batch interval
-```
 
 ## File Structure
 
@@ -258,27 +187,4 @@ baitblock/
 
 ## Known Limitations
 
-- Only works on Kick.com streams
-- Requires local backend server running (`localhost:8000`)
-- Phishing detection model confidence threshold is high (0.99997) to minimize false positives
-- Uncertain classifications are flagged but not visually highlighted
-- Only monitors chat streams where the extension is explicitly enabled
-
-## Future Improvements
-
-- Add support for additional streaming platforms
-- Implement cloud-based ML inference (remove local server requirement)
-- Add user feedback mechanism to improve model accuracy
-- Create analytics dashboard for detected phishing patterns
-- Support for multiple languages
-- Real-time confidence score display
-
-## License
-
-See LICENSE file for details.
-
-## Research & Documentation
-
-- Intention document: `documents/intention-document.tex`
-- Midpoint report: `documents/midpoint-report.tex`
-- Bibliography: `documents/refs.bib`
+- The model used has a high false positive rate since it was trained on traditional phishing vectors, not livestream chat messages. I mannually required a confidence threshold of 0.999997 in `server/bert_label.py` for the model to label a message.
