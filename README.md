@@ -11,26 +11,26 @@ BaitBlock is a browser extension designed to protect streamers and viewers from 
 The project consists of three main components:
 
 ### 1. The Extension
-      ####  **Frontend (React + Vite)** (`src/`)
+   - **Frontend (React + Vite)** (`src/`)
       - **Purpose**: Provides the extension popup UI
       - **Key Files**:
       - `App.tsx`: Main application component
       - `components/feed-toggle.tsx`: Toggle switch to enable/disable chat monitoring
       - `supabase-client.ts`: Initializes Supabase client for data persistence
 
-      #### **Content Script** (`src/content/`)
+   - **Content Script** (`src/content/`)
       Runs on the webpage to monitor chat activity:
       - **`scrape-kick.ts`**: Scrapes chat messages from Kick's DOM using MutationObserver
       - Monitors the chat container (`#chatroom-messages`)
       - Extracts message metadata (username, text, emotes, stream name)
       - Filters out messages shorter than 2 words or with no long words (potential links)
 
-      - **`url-listener.ts`**: Detects when user is on a Kick stream
+   - **`url-listener.ts`**: Detects when user is on a Kick stream
       - Polls for URL changes to handle single-page navigation
       - Validates that the user is on a valid Kick stream page
       - Returns the stream name for context
 
-      #### **Background Service Worker** (`src/background/`)
+   - **Background Service Worker** (`src/background/`)
       Orchestrates message flow and AI classification:
       - **`index.ts`**: 
       - Receives chat messages from the content script
