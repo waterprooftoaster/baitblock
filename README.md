@@ -26,7 +26,7 @@ A Chrome extension that detects and highlights phishing messages in live chat st
    npm install
    ```
 
-2. *** Optional: ***  Create a table in Supabase and create a RLS policy that allows for anon inserts. Copy `.env.example` into your `.env` file and enter your Supabase credentials for data collection. This is not required for the extension to work. Don't forget to comment out the Supabase code.
+2. ***Optional:***  Create a table in Supabase and create a RLS policy that allows for anon inserts. Copy `.env.example` into your `.env` file and enter your Supabase credentials for data collection. This is not required for the extension to work. Don't forget to comment out the Supabase code.
    ```
    VITE_SUPABASE_URL=your_supabase_url
    VITE_SUPABASE_ANON_KEY=your_anon_key
@@ -57,7 +57,7 @@ A Chrome extension that detects and highlights phishing messages in live chat st
    pip install -r requirements.txt
    ```
 
-2. *** Optional: *** Create `.env` file in `server/` with Supabase credentials:
+2. ***Optional:*** Create `.env` file in `server/` with Supabase credentials:
    ```
    SUPABASE_URL=your_supabase_url
    SUPABASE_KEY=your_key
