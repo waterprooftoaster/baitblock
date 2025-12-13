@@ -6,7 +6,7 @@ A Chrome extension that detects and highlights phishing messages in live chat st
 
 - This is a project developed for the class "Trust and Safety" with Professor Rosanna Bellini at New York University. It was developed both for Kick user protection and to study phishing vectors on Kick. 
 
-- If you are not interested in the AI labeling feature and simply want to collect Kick messages in real-time, comment out the code that sends and recieves data from the backend in `src/background/index.ts` and the UI injection code in `src/content/index.ts`. Then simply follow the set up instructions below.
+- If you are not interested in the AI labeling feature and simply want to collect Kick messages in real-time, comment out the code that sends and receives data from the backend in `src/background/index.ts` and the UI injection code in `src/content/index.ts`. Then simply follow the set up instructions below.
 
 - Quick demo video:
    - [![BaitBlock Demo](https://img.youtube.com/vi/cQIUO8_igs4/hqdefault.jpg)](https://www.youtube.com/watch?v=cQIUO8_igs4)
@@ -26,7 +26,7 @@ A Chrome extension that detects and highlights phishing messages in live chat st
    npm install
    ```
 
-2. ***Optional:***  Create a table in Supabase and create a RLS policy that allows for anon inserts. Copy `.env.example` into your `.env` file and enter your Supabase credentials for data collection. This is not required for the extension to work. Don't forget to comment out the Supabase code.
+2. ***Optional:***  Create a table in Supabase and create an RLS policy that allows for anon inserts. Copy `.env.example` into your `.env` file and enter your Supabase credentials for data collection. This is not required for the extension to work. Don't forget to comment out the Supabase code.
    ```
    VITE_SUPABASE_URL=your_supabase_url
    VITE_SUPABASE_ANON_KEY=your_anon_key
@@ -81,7 +81,7 @@ The project consists of three main components:
    - **Content Script (`src/content/`)**
       Runs on the webpage to monitor chat activity:
       - **`scrape-kick.ts`**: Scrapes chat messages from Kick's DOM using MutationObserver. Extracts message metadata (username, text, emotes, stream name)
-      - **`url-listener.ts`**: Detects when user is on a Kick stream
+      - **`url-listener.ts`**: Detects when the user is on a Kick stream
 
    - **Background Service Worker (`src/background/`)**
       Orchestrates message flow and AI classification:
@@ -96,10 +96,10 @@ The project consists of three main components:
   
 - **Classification Model (PyTorch + HugginFace) `bert_label.py`**: 
   - The classification model used is: [ealvaradob/bert-finetuned-phishing](https://huggingface.co/ealvaradob/bert-finetuned-phishing)
-  - Outputs phishing probability scores and classify the messages as phishing, uncertain, or benign.
+  - Outputs phishing probability scores and classifies the messages as phishing, uncertain, or benign.
 
 ### 3. Data Management (`data/`)
-- **`analyze.py`**: Analysis data from supabase for the final report.
+- **`analyze.py`**: Analysis data from Supabase for the research report. This is not required.
 
 ## Workflow
 
@@ -152,5 +152,5 @@ The project consists of three main components:
 
 ## Known Limitations and Future Steps
 
-- The model used has a high false positive rate since it was trained on traditional phishing vectors, not livestream chat messages. I mannually required a confidence threshold of 0.999997 in `server/bert_label.py` for the model to label a message.
-- Currently collected ~55k messages from a variaty of channels and time frames. Working on collecting more data and annotation to train my own classification model from BERT.
+- The model used has a high false positive rate since it was trained on traditional phishing vectors, not livestream chat messages. I manually required a confidence threshold of 0.999997 in `server/bert_label.py` for the model to label a message.
+- Currently collected ~55k messages from a variety of channels and time frames. Working on collecting more data and annotations to train my own classification model from BERT.
