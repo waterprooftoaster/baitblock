@@ -4,9 +4,9 @@ A Chrome extension that detects and highlights phishing messages in live chat st
 
 ## Overview
 
-- This is a project developed for the class "Trust and Safety" with Professor Rosanna Bellini at New York University. It was developed both for Kick user protection and to study phishing vectors on Kick. The final report for this class, containing extremely detailed results of my research, is included in the project root. It covers the severity of phishing propagation on smaller channels. 
+- This is a project developed for the class "Trust and Safety" with Professor Rosanna Bellini at New York University. It was designed both for Kick user protection and to study phishing vectors on Kick. The final report for this class, containing extremely detailed results of my research, is included in the project root. It covers the severity of phishing propagation on smaller channels. 
 
-- If you are not interested in the AI labeling feature and simply want to collect Kick messages in real-time, comment out the code that sends and receives data from the backend in `src/background/index.ts` and the UI injection code in `src/content/index.ts`. Then simply follow the set up instructions below.
+- If you are not interested in the AI labeling feature and simply want to collect Kick messages in real-time, comment out the code that sends and receives data from the backend in `src/background/index.ts` and the UI injection code in `src/content/index.ts`. Then follow the setup instructions below.
 
 - Quick demo video:
    - [![BaitBlock Demo](https://img.youtube.com/vi/cQIUO8_igs4/hqdefault.jpg)](https://www.youtube.com/watch?v=cQIUO8_igs4)
@@ -17,7 +17,7 @@ A Chrome extension that detects and highlights phishing messages in live chat st
 - Node.js 18+
 - Python 3.9+
 - Chrome/Chromium browser
-- Supabase account and credentials
+- Optional: Supabase account and credentials
 
 ### Frontend Setup
 
