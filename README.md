@@ -4,7 +4,7 @@ A Chrome extension that detects and highlights phishing messages in live chat st
 
 ## Overview
 
-- This is a project developed for the class "Trust and Safety" with Professor Rosanna Bellini at New York University. It was developed both for Kick user protection and to study phishing vectors on Kick. 
+- This is a project developed for the class "Trust and Safety" with Professor Rosanna Bellini at New York University. It was developed both for Kick user protection and to study phishing vectors on Kick. The final report for this class, containing extremely detailed results of my research, is included in the project root. It covers the severity of phishing propagation on smaller channels. 
 
 - If you are not interested in the AI labeling feature and simply want to collect Kick messages in real-time, comment out the code that sends and receives data from the backend in `src/background/index.ts` and the UI injection code in `src/content/index.ts`. Then simply follow the set up instructions below.
 
